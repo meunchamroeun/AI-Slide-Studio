@@ -6,11 +6,18 @@ import {
   Slide,
 } from '@ai-slide-studio/shared';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
+function getApiBaseUrl(): string {
+  if (typeof window !== 'undefined') {
+    // In browser, relative /api ensures same-domain calls without CORS or dead Render servers
+    return '/api';
+  }
+  return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
+}
 
 class ApiClient {
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-    const url = `${API_BASE_URL}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
+    const baseUrl = getApiBaseUrl();
+    const url = `${baseUrl}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
       ...(options.headers as Record<string, string>),
@@ -147,7 +154,7 @@ class ApiClient {
 
   // Exports
   async exportHtml(id: string): Promise<string> {
-    const url = `${API_BASE_URL}/presentations/${id}/export/html`;
+    const url = `${getApiBaseUrl()}/presentations/${id}/export/html`;
     const response = await fetch(url);
     if (!response.ok) {
       throw new Error(`HTML export failed with status ${response.status}`);
@@ -156,7 +163,7 @@ class ApiClient {
   }
 
   async exportPdf(id: string): Promise<Blob> {
-    const url = `${API_BASE_URL}/presentations/${id}/export/pdf`;
+    const url = `${getApiBaseUrl()}/presentations/${id}/export/pdf`;
     const response = await fetch(url);
     if (!response.ok) {
       throw new Error(`PDF export failed with status ${response.status}`);
@@ -165,15 +172,15 @@ class ApiClient {
   }
 
   getExportHtmlUrl(id: string): string {
-    return `${API_BASE_URL}/presentations/${id}/export/html`;
+    return `${getApiBaseUrl()}/presentations/${id}/export/html`;
   }
 
   getExportPdfUrl(id: string): string {
-    return `${API_BASE_URL}/presentations/${id}/export/pdf`;
+    return `${getApiBaseUrl()}/presentations/${id}/export/pdf`;
   }
 
   getExportJsonUrl(id: string): string {
-    return `${API_BASE_URL}/presentations/${id}/export/json`;
+    return `${getApiBaseUrl()}/presentations/${id}/export/json`;
   }
 
   async importJson(jsonContent: string): Promise<PresentationDocument> {

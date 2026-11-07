@@ -74,8 +74,8 @@ export default function AdminPage() {
   const fetchAdminData = async () => {
     try {
       const [resOverview, resPres] = await Promise.all([
-        fetch('http://localhost:4000/api/admin/overview'),
-        fetch('http://localhost:4000/api/admin/presentations'),
+        fetch('/api/admin/overview'),
+        fetch('/api/admin/presentations'),
       ]);
 
       if (resOverview.ok) {
@@ -105,7 +105,7 @@ export default function AdminPage() {
     setSavingKey(true);
     setTestResult(null);
     try {
-      const res = await fetch('http://localhost:4000/api/admin/server-config', {
+      const res = await fetch('/api/admin/server-config', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -133,7 +133,7 @@ export default function AdminPage() {
     setTestingKey(true);
     setTestResult(null);
     try {
-      const res = await fetch('http://localhost:4000/api/admin/test-connection', {
+      const res = await fetch('/api/admin/test-connection', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -163,7 +163,7 @@ export default function AdminPage() {
       return;
     }
     try {
-      const res = await fetch(`http://localhost:4000/api/admin/presentations/${id}`, {
+      const res = await fetch(`/api/presentations/${id}`, {
         method: 'DELETE',
       });
       if (res.ok) {
