@@ -19,6 +19,7 @@ import {
   X,
   Phone,
   AtSign,
+  ExternalLink,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LogoMark } from '@/components/logo';
@@ -59,6 +60,57 @@ export function AuthCard({ mode }: { mode: 'signin' | 'register' }) {
 
   const [telegramModalOpen, setTelegramModalOpen] = useState(false);
   const [telegramUsername, setTelegramUsername] = useState('');
+  const telegramContainerRef = React.useRef<HTMLDivElement>(null);
+
+  // Initialize official Telegram Login Widget when modal opens
+  React.useEffect(() => {
+    if (!telegramModalOpen) return;
+
+    // Register global Telegram auth callback
+    (window as any).onTelegramAuth = (telegramUser: any) => {
+      if (telegramUser && telegramUser.id) {
+        setBusy(true);
+        loginTelegram({
+          id: telegramUser.id,
+          first_name: telegramUser.first_name || '',
+          last_name: telegramUser.last_name || '',
+          username: telegramUser.username || '',
+          photo_url: telegramUser.photo_url || '',
+        })
+          .then(() => {
+            setTelegramModalOpen(false);
+            router.replace(next);
+          })
+          .catch((err: any) => {
+            setError(err?.message || 'Telegram auth failed.');
+          })
+          .finally(() => {
+            setBusy(false);
+          });
+      }
+    };
+
+    // Dynamically inject Telegram widget script for @slide_animationBot
+    const timer = setTimeout(() => {
+      if (telegramContainerRef.current) {
+        telegramContainerRef.current.innerHTML = '';
+        const script = document.createElement('script');
+        script.src = 'https://telegram.org/js/telegram-widget.js?22';
+        script.setAttribute('data-telegram-login', 'slide_animationBot');
+        script.setAttribute('data-size', 'large');
+        script.setAttribute('data-radius', '12');
+        script.setAttribute('data-request-access', 'write');
+        script.setAttribute('data-onauth', 'onTelegramAuth(user)');
+        script.async = true;
+        telegramContainerRef.current.appendChild(script);
+      }
+    }, 100);
+
+    return () => {
+      clearTimeout(timer);
+      delete (window as any).onTelegramAuth;
+    };
+  }, [telegramModalOpen, loginTelegram, next, router]);
 
   // If already logged in, redirect
   React.useEffect(() => {
@@ -480,7 +532,7 @@ export function AuthCard({ mode }: { mode: 'signin' | 'register' }) {
       {/* Telegram Sign In Modal */}
       <Dialog open={telegramModalOpen} onOpenChange={setTelegramModalOpen}>
         <DialogContent className="max-w-md bg-card border-border/80 text-foreground p-6 rounded-2xl shadow-2xl">
-          <DialogHeader className="text-left space-y-1.5 pb-2 border-b border-border/50">
+          <DialogHeader className="text-left space-y-1.5 pb-3 border-b border-border/50">
             <div className="flex items-center gap-2.5">
               <div className="size-9 rounded-xl bg-sky-500/15 border border-sky-500/30 flex items-center justify-center text-sky-400">
                 <TelegramIcon className="size-5" />
@@ -490,13 +542,44 @@ export function AuthCard({ mode }: { mode: 'signin' | 'register' }) {
                   {t.auth.telegramModalTitle || 'Sign in with Telegram'}
                 </DialogTitle>
                 <DialogDescription className="text-xs text-muted-foreground">
-                  {t.auth.telegramModalDesc || 'Connect and authorize securely with your Telegram account'}
+                  {t.auth.telegramModalDesc || 'Connect and authorize securely with @slide_animationBot'}
                 </DialogDescription>
               </div>
             </div>
           </DialogHeader>
 
           <div className="space-y-3 pt-3">
+            {/* Official Bot Info Card & Direct Launch Link */}
+            <div className="flex items-center justify-between p-3 rounded-xl border border-sky-500/30 bg-sky-500/10 backdrop-blur-sm">
+              <div className="flex items-center gap-2.5 text-left">
+                <div className="size-8.5 rounded-lg bg-sky-500/20 border border-sky-500/40 flex items-center justify-center text-sky-400">
+                  <TelegramIcon className="size-4.5" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-xs font-semibold text-foreground">
+                      @slide_animationBot
+                    </span>
+                    <Badge variant="outline" className="text-[10px] bg-sky-500/15 text-sky-400 border-sky-500/30">
+                      Official
+                    </Badge>
+                  </div>
+                  <span className="text-[11px] text-muted-foreground">
+                    {t.auth.telegramBotLabel || 'Official Authentication Bot'}
+                  </span>
+                </div>
+              </div>
+              <a
+                href="https://t.me/slide_animationBot"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-sky-500 hover:bg-sky-600 text-white text-xs font-semibold transition-all shadow-xs cursor-pointer"
+              >
+                <span>{locale === 'kh' ? 'បើក Bot' : 'Open Bot'}</span>
+                <ExternalLink className="size-3" />
+              </a>
+            </div>
+
             {/* Quick 1-Click Telegram Profile */}
             <div
               onClick={() => handleTelegramAuth('chamroeun')}
@@ -511,8 +594,8 @@ export function AuthCard({ mode }: { mode: 'signin' | 'register' }) {
                     <span className="text-xs font-semibold text-foreground group-hover:text-sky-400 transition-colors">
                       Chamroeun Meun
                     </span>
-                    <Badge variant="outline" className="text-[10px] bg-sky-500/10 text-sky-400 border-sky-500/30">
-                      Verified
+                    <Badge variant="outline" className="text-[10px] bg-amber-500/15 text-amber-400 border-amber-500/30">
+                      Super Admin
                     </Badge>
                   </div>
                   <span className="text-[11px] text-muted-foreground font-mono">
@@ -524,7 +607,7 @@ export function AuthCard({ mode }: { mode: 'signin' | 'register' }) {
             </div>
 
             {/* Custom Telegram Username / Phone Input */}
-            <div className="pt-2 border-t border-border/50 space-y-2.5">
+            <div className="pt-2 border-t border-border/50 space-y-2">
               <label className="text-xs font-medium text-foreground block text-left">
                 {locale === 'kh' ? 'ឬបញ្ចូលឈ្មោះគណនី Telegram របស់អ្នក' : 'Or enter your Telegram @username:'}
               </label>
@@ -548,6 +631,16 @@ export function AuthCard({ mode }: { mode: 'signin' | 'register' }) {
                 <Send className="size-3.5" />
                 <span>{t.auth.telegramAuthorizeBtn || 'Authorize with Telegram'}</span>
               </Button>
+            </div>
+
+            {/* Telegram Official Widget Container (Optional Web Widget) */}
+            <div className="pt-2 border-t border-border/40 text-center">
+              <div ref={telegramContainerRef} className="min-h-[40px] flex items-center justify-center overflow-hidden" />
+              <p className="text-[10px] text-muted-foreground/80 mt-1">
+                {locale === 'kh'
+                  ? 'ភ្ជាប់ domain តាមរយៈ @BotFather ដោយប្រើពាក្យបញ្ជា /setdomain ទៅកាន់ slide.ice-tea.me'
+                  : 'Link domain in @BotFather via /setdomain to slide.ice-tea.me'}
+              </p>
             </div>
           </div>
         </DialogContent>
