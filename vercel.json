@@ -1,0 +1,6 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "nextjs",
+  "buildCommand": "pnpm --filter @ai-slide-studio/shared build && pnpm --filter @ai-slide-studio/web build",
+  "outputDirectory": "apps/web/.next"
+}

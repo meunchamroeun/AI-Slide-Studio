@@ -36,9 +36,26 @@ async function bootstrap() {
     }),
   );
 
-  // CORS configuration
+  // CORS configuration supporting local dev, Vercel deployments, and custom domains
   app.enableCors({
-    origin: [corsOrigin, 'http://localhost:3000', 'http://127.0.0.1:3000'],
+    origin: (origin, callback) => {
+      // Allow server-to-server or requests without origin
+      if (!origin) return callback(null, true);
+      if (
+        corsOrigin === '*' ||
+        origin === corsOrigin ||
+        origin.endsWith('.vercel.app') ||
+        origin.includes('localhost') ||
+        origin.includes('127.0.0.1')
+      ) {
+        return callback(null, true);
+      }
+      const allowedList = corsOrigin.split(',').map((s) => s.trim());
+      if (allowedList.includes(origin)) {
+        return callback(null, true);
+      }
+      return callback(null, true);
+    },
     methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
     credentials: true,
   });
