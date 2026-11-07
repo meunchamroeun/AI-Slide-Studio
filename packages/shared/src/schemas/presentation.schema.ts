@@ -204,7 +204,7 @@ export const PresentationDocumentSchema = z.object({
 });
 
 export const GeneratePresentationDtoSchema = z.object({
-  prompt: z.string().min(5).max(3000),
+  prompt: z.string().min(3).max(50000),
   slideCount: z.number().int().min(3).max(30).default(8),
   language: z.string().default('English'),
   audience: z.string().default('General Business'),
@@ -215,6 +215,7 @@ export const GeneratePresentationDtoSchema = z.object({
   animationStyle: z.enum(['subtle', 'dynamic', 'cinematic', 'minimal']).default('dynamic'),
   visualAssetPreference: z.enum(['illustrations', 'geometric', 'charts', 'mixed']).default('mixed'),
   apiKey: z.string().optional(),
+  attachedFileName: z.string().optional(),
 });
 
 export const RegenerateSlideDtoSchema = z.object({

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Sparkles,
@@ -18,6 +18,10 @@ import {
   Eye,
   EyeOff,
   ShieldCheck,
+  Upload,
+  FileText,
+  Trash2,
+  FileUp,
 } from 'lucide-react';
 import {
   Dialog,
@@ -44,6 +48,11 @@ import {
   AspectRatio,
 } from '@ai-slide-studio/shared';
 import { useI18n } from '@/components/i18n-provider';
+import {
+  extractTextFromFile,
+  composePromptWithAttachment,
+  ExtractedFile,
+} from '@/lib/file-extractor';
 
 interface PromptGeneratorModalProps {
   open: boolean;
@@ -81,6 +90,11 @@ export function PromptGeneratorModal({
   const [currentStageIndex, setCurrentStageIndex] = useState(0);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  // File Upload State
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [attachedFile, setAttachedFile] = useState<ExtractedFile | null>(null);
+  const [isReadingFile, setIsReadingFile] = useState(false);
+
   // Gemini API Key: Server Admin Default vs BYOK (User custom key)
   const [apiKeySource, setApiKeySource] = useState<'server' | 'custom'>('server');
   const [customApiKey, setCustomApiKey] = useState('');
@@ -116,6 +130,32 @@ export function PromptGeneratorModal({
     } catch {}
   };
 
+  const handleProcessFile = async (file: File) => {
+    try {
+      setIsReadingFile(true);
+      setErrorMessage(null);
+      const extracted = await extractTextFromFile(file);
+      setAttachedFile(extracted);
+    } catch (err: any) {
+      setErrorMessage(`Failed to read file: ${err?.message || 'Unsupported format'}`);
+    } finally {
+      setIsReadingFile(false);
+    }
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      handleProcessFile(e.target.files[0]);
+    }
+  };
+
+  const handleRemoveFile = () => {
+    setAttachedFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
   // Sync initialPrompt
   React.useEffect(() => {
     if (initialPrompt) {
@@ -124,7 +164,8 @@ export function PromptGeneratorModal({
   }, [initialPrompt]);
 
   const handleGenerate = async () => {
-    if (!prompt.trim()) return;
+    const effectivePrompt = composePromptWithAttachment(prompt, attachedFile);
+    if (!effectivePrompt.trim()) return;
 
     setIsGenerating(true);
     setErrorMessage(null);
@@ -142,7 +183,7 @@ export function PromptGeneratorModal({
 
     try {
       const payload: GeneratePresentationDto = {
-        prompt: prompt.trim(),
+        prompt: effectivePrompt,
         slideCount,
         theme,
         aspectRatio,
@@ -153,6 +194,7 @@ export function PromptGeneratorModal({
         animationStyle,
         visualAssetPreference: 'mixed',
         apiKey: apiKeySource === 'custom' && customApiKey.trim() ? customApiKey.trim() : undefined,
+        attachedFileName: attachedFile?.name,
       };
 
       const result = await api.generatePresentation(payload);
@@ -259,16 +301,57 @@ export function PromptGeneratorModal({
             )}
 
             <div className="space-y-2">
-              <label className="text-xs font-semibold text-foreground flex items-center justify-between">
-                <span>{t.modal.promptLabel}</span>
-                <span className="text-[11px] text-muted-foreground font-normal">
-                  {t.modal.promptHint}
-                </span>
-              </label>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".pdf,.docx,.doc,.txt,.md,.markdown,.csv,.tsv,.json,.yaml,.yml,.xml"
+                onChange={handleFileSelect}
+                className="hidden"
+              />
+
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-semibold text-foreground flex items-center gap-2">
+                  <span>{t.modal.promptLabel}</span>
+                </label>
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="inline-flex items-center gap-1.5 text-xs text-brand hover:text-brand/80 font-medium cursor-pointer"
+                >
+                  <Upload className="size-3.5" />
+                  <span>{attachedFile ? 'Change Attached File' : 'Attach Document (.pdf, .docx, .txt)'}</span>
+                </button>
+              </div>
+
+              {attachedFile && (
+                <div className="flex items-center justify-between p-2.5 rounded-xl bg-brand/10 border border-brand/30 text-xs">
+                  <div className="flex items-center gap-2 truncate">
+                    <FileText className="size-4 text-brand shrink-0" />
+                    <span className="font-medium text-foreground truncate max-w-[280px]">
+                      {attachedFile.name}
+                    </span>
+                    <span className="text-[10px] text-muted-foreground font-mono">
+                      ({attachedFile.sizeFormatted} · {attachedFile.charCount.toLocaleString()} chars)
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleRemoveFile}
+                    className="text-muted-foreground hover:text-destructive cursor-pointer p-1"
+                  >
+                    <Trash2 className="size-3.5" />
+                  </button>
+                </div>
+              )}
+
               <Textarea
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
-                placeholder="e.g. Create a 10-slide professional presentation about Artificial Intelligence, its development, applications, challenges, and future."
+                placeholder={
+                  attachedFile
+                    ? 'Optional: add specific presentation instructions for the attached document...'
+                    : 'e.g. Create a 10-slide professional presentation about Artificial Intelligence, its development, applications, challenges, and future.'
+                }
                 rows={4}
                 className="resize-none bg-background/60 text-sm leading-relaxed border-border/70 focus:border-brand/60 focus:ring-1 focus:ring-brand/30 rounded-xl"
               />
