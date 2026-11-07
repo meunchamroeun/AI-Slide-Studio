@@ -45,6 +45,8 @@ async function bootstrap() {
         corsOrigin === '*' ||
         origin === corsOrigin ||
         origin.endsWith('.vercel.app') ||
+        origin.endsWith('.ice-tea.me') ||
+        origin === 'https://ice-tea.me' ||
         origin.includes('localhost') ||
         origin.includes('127.0.0.1')
       ) {
