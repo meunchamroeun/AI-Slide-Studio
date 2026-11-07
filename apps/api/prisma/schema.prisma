@@ -1,0 +1,39 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Presentation {
+  id          String   @id @default(uuid())
+  title       String
+  description String?  @default("")
+  theme       String   @default("modern-dark")
+  aspectRatio String   @default("16:9")
+  slideCount  Int      @default(0)
+  document    Json     // Complete PresentationDocument JSON
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  generationJobs GenerationJob[]
+
+  @@map("presentations")
+}
+
+model GenerationJob {
+  id             String        @id @default(uuid())
+  presentationId String?
+  presentation   Presentation? @relation(fields: [presentationId], references: [id], onDelete: SetNull)
+  prompt         String
+  model          String        @default("gemini-2.5-flash")
+  status         String        @default("completed") // pending, completed, failed
+  error          String?
+  durationMs     Int?
+  slideCount     Int           @default(0)
+  createdAt      DateTime      @default(now())
+
+  @@map("generation_jobs")
+}

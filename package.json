@@ -1,0 +1,28 @@
+{
+  "name": "ai-slide-animation-studio",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AI Slide Animation Studio - Automated animated presentation generator",
+  "author": "Google DeepMind pair programming",
+  "license": "MIT",
+  "scripts": {
+    "dev": "pnpm --filter @ai-slide-studio/shared build && pnpm --parallel dev",
+    "dev:api": "pnpm --filter @ai-slide-studio/api dev",
+    "dev:web": "pnpm --filter @ai-slide-studio/web dev",
+    "build": "pnpm --filter @ai-slide-studio/shared build && pnpm --filter @ai-slide-studio/api build && pnpm --filter @ai-slide-studio/web build",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "test:unit": "pnpm --filter @ai-slide-studio/shared test && pnpm --filter @ai-slide-studio/api test:unit && pnpm --filter @ai-slide-studio/web test:unit",
+    "test:integration": "pnpm --filter @ai-slide-studio/api test:integration",
+    "test:e2e": "pnpm --filter @ai-slide-studio/web test:e2e",
+    "format": "prettier --write \"**/*.{ts,tsx,js,json,css,md}\"",
+    "db:migrate": "pnpm --filter @ai-slide-studio/api db:migrate",
+    "db:generate": "pnpm --filter @ai-slide-studio/api db:generate",
+    "db:seed": "pnpm --filter @ai-slide-studio/api db:seed"
+  },
+  "devDependencies": {
+    "prettier": "^3.5.2",
+    "typescript": "^5.8.2"
+  }
+}
