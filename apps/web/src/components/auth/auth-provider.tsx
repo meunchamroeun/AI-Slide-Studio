@@ -9,6 +9,8 @@ export interface User {
   email: string | null;
   avatar_url: string | null;
   role: 'user' | 'admin';
+  provider?: 'email' | 'google' | 'telegram' | 'demo';
+  telegram_username?: string;
 }
 
 export interface AuthContextType {
@@ -19,6 +21,14 @@ export interface AuthContextType {
   register: (name: string, email: string, password?: string) => Promise<User>;
   loginDemo: () => Promise<User>;
   loginAdmin: () => Promise<User>;
+  loginGoogle: (account?: { email?: string; name?: string; avatar_url?: string }) => Promise<User>;
+  loginTelegram: (data: {
+    id: number | string;
+    first_name: string;
+    last_name?: string;
+    username?: string;
+    photo_url?: string;
+  }) => Promise<User>;
   logout: () => Promise<void>;
 }
 
@@ -122,6 +132,59 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return ADMIN_USER;
   }, [setUser]);
 
+  const loginGoogle = useCallback(
+    async (account?: { email?: string; name?: string; avatar_url?: string }): Promise<User> => {
+      const email = account?.email || ADMIN_EMAIL;
+      const isSuperAdmin = email.trim().toLowerCase() === ADMIN_EMAIL.toLowerCase();
+      const isAdmin = isSuperAdmin || email.toLowerCase().includes('admin');
+      const name =
+        account?.name ||
+        (isSuperAdmin ? 'Chamroeun Meun' : email.split('@')[0].replace('.', ' ').replace(/\b\w/g, (c) => c.toUpperCase()));
+      const avatar_url =
+        account?.avatar_url ||
+        (isSuperAdmin ? 'https://lh3.googleusercontent.com/a/ACg8ocISz19W4p7Q=s96-c' : null);
+
+      const loggedUser: User = {
+        id: isSuperAdmin ? 'usr-admin-01' : `usr-g-${Date.now()}`,
+        name,
+        email,
+        avatar_url,
+        role: isAdmin ? 'admin' : 'user',
+        provider: 'google',
+      };
+      setUser(loggedUser);
+      return loggedUser;
+    },
+    [setUser]
+  );
+
+  const loginTelegram = useCallback(
+    async (telegramData: {
+      id: number | string;
+      first_name: string;
+      last_name?: string;
+      username?: string;
+      photo_url?: string;
+    }): Promise<User> => {
+      const fullName = `${telegramData.first_name}${telegramData.last_name ? ' ' + telegramData.last_name : ''}`.trim();
+      const username = telegramData.username || 'telegram_user';
+      const isSuperAdmin = username.toLowerCase() === 'meunchamroeun' || username.toLowerCase() === 'chamroeun';
+
+      const loggedUser: User = {
+        id: `usr-tg-${telegramData.id || Date.now()}`,
+        name: fullName || `@${username}`,
+        email: `${username.toLowerCase()}@telegram.user`,
+        avatar_url: telegramData.photo_url || null,
+        role: isSuperAdmin ? 'admin' : 'user',
+        provider: 'telegram',
+        telegram_username: username,
+      };
+      setUser(loggedUser);
+      return loggedUser;
+    },
+    [setUser]
+  );
+
   const logout = useCallback(async () => {
     setUser(null);
     router.push('/login');
@@ -137,6 +200,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         register,
         loginDemo,
         loginAdmin,
+        loginGoogle,
+        loginTelegram,
         logout,
       }}
     >
