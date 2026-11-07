@@ -33,14 +33,16 @@ export function FirstTimeVisitorGuide({
   onOpenCreate,
 }: FirstTimeVisitorGuideProps) {
   const { t, locale } = useI18n();
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true);
   const [activeStep, setActiveStep] = useState(0);
 
-  // Check localStorage on mount
+  // Check localStorage on mount (hidden by default unless user previously opened it)
   useEffect(() => {
     try {
       const stored = localStorage.getItem('slidestudio_guide_collapsed');
-      if (stored === 'true') {
+      if (stored === 'false') {
+        setIsCollapsed(false);
+      } else {
         setIsCollapsed(true);
       }
     } catch {
@@ -106,33 +108,37 @@ export function FirstTimeVisitorGuide({
   return (
     <div className="w-full border-b border-border/60 bg-gradient-to-r from-card/90 via-card/60 to-card/90 backdrop-blur-xl">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 py-3">
-        {/* Collapsed Pill State */}
+        {/* Collapsed Pill State (Hidden by default) */}
         {isCollapsed ? (
           <motion.div
-            initial={{ opacity: 0, y: -8 }}
+            initial={{ opacity: 0, y: -4 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.35, ease: easeQuint }}
-            className="flex items-center justify-between gap-3"
+            exit={{ opacity: 0, y: -4 }}
+            transition={{ duration: 0.25, ease: easeQuint }}
+            onClick={toggleCollapse}
+            className="flex items-center justify-between gap-3 cursor-pointer py-0.5 group"
           >
             <div className="flex items-center gap-2.5 text-xs">
               <span className="flex size-2 rounded-full bg-brand animate-pulse" />
-              <Compass className="size-4 text-brand shrink-0" />
+              <Compass className="size-4 text-brand shrink-0 group-hover:rotate-45 transition-transform" />
               <span className="font-semibold text-foreground">
                 {t.guide.badge}:
               </span>
-              <span className="text-muted-foreground hidden sm:inline">
+              <span className="text-muted-foreground hidden sm:inline group-hover:text-foreground transition-colors">
                 {t.guide.title}
               </span>
             </div>
             <div className="flex items-center gap-2">
               <button
                 type="button"
-                onClick={toggleCollapse}
-                className="inline-flex items-center gap-1.5 rounded-full border border-border/80 bg-secondary/60 hover:bg-secondary px-3 py-1 text-xs font-medium text-foreground transition-colors cursor-pointer"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleCollapse();
+                }}
+                className="inline-flex items-center gap-1.5 rounded-full border border-border/80 bg-secondary/60 hover:bg-secondary px-3.5 py-1 text-xs font-semibold text-foreground transition-all group-hover:border-brand/40 cursor-pointer shadow-xs"
               >
                 <span>{t.guide.showGuide}</span>
-                <ChevronRight className="size-3.5 text-brand" />
+                <ChevronRight className="size-3.5 text-brand group-hover:translate-x-0.5 transition-transform" />
               </button>
             </div>
           </motion.div>
