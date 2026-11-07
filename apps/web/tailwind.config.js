@@ -14,7 +14,7 @@ module.exports = {
         background: '#0B0A1A',
         foreground: '#F8FAFC',
         card: {
-          DEFAULT: 'rgba(23, 21, 46, 0.75)',
+          DEFAULT: '#14122E',
           foreground: '#FFFFFF',
         },
         popover: {
@@ -41,8 +41,8 @@ module.exports = {
           DEFAULT: '#EF4444',
           foreground: '#FFFFFF',
         },
-        border: 'rgba(124, 98, 255, 0.2)',
-        input: 'rgba(23, 21, 46, 0.9)',
+        border: '#4A3E99',
+        input: '#14122E',
         ring: '#7C5CFC',
       },
       borderRadius: {

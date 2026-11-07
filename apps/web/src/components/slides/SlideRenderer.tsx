@@ -118,6 +118,7 @@ export const SlideRenderer: React.FC<SlideRendererProps> = ({
 
 function renderLayoutContent(slide: Slide, theme: ThemeConfig) {
   const content = slide.content;
+  const isDark = theme.name !== 'minimal-light';
 
   switch (slide.layout) {
     case 'cover':
@@ -131,7 +132,11 @@ function renderLayoutContent(slide: Slide, theme: ThemeConfig) {
           )}
           <h1
             data-animate="title"
-            className="text-[84px] font-extrabold leading-[1.08] tracking-tight max-w-[1400px] mb-6 text-foreground bg-gradient-to-br from-white via-slate-100 to-slate-400 bg-clip-text text-transparent"
+            className={`text-[84px] font-extrabold leading-[1.08] tracking-tight max-w-[1400px] mb-6 ${
+              isDark
+                ? 'bg-gradient-to-br from-white via-slate-100 to-slate-400 bg-clip-text text-transparent'
+                : 'text-[var(--tx)]'
+            }`}
           >
             {content.title}
           </h1>
@@ -266,7 +271,11 @@ function renderLayoutContent(slide: Slide, theme: ThemeConfig) {
                   data-animate="counter"
                   data-value={stat.value}
                   data-suffix={stat.suffix || ''}
-                  className="text-[82px] font-extrabold leading-none tracking-tight mb-3 bg-gradient-to-br from-white via-slate-100 to-cyan-300 bg-clip-text text-transparent font-mono"
+                  className={`text-[82px] font-extrabold leading-none tracking-tight mb-3 font-mono ${
+                    isDark
+                      ? 'bg-gradient-to-br from-white via-slate-100 to-cyan-300 bg-clip-text text-transparent'
+                      : 'text-[var(--pri)]'
+                  }`}
                 >
                   {stat.value}
                 </div>
@@ -564,7 +573,14 @@ function renderLayoutContent(slide: Slide, theme: ThemeConfig) {
               {content.badge}
             </div>
           )}
-          <h1 data-animate="title" className="text-[96px] font-extrabold leading-tight tracking-tight mb-6 bg-gradient-to-br from-white to-slate-300 bg-clip-text text-transparent">
+          <h1
+            data-animate="title"
+            className={`text-[96px] font-extrabold leading-tight tracking-tight mb-6 ${
+              isDark
+                ? 'bg-gradient-to-br from-white to-slate-300 bg-clip-text text-transparent'
+                : 'text-[var(--tx)]'
+            }`}
+          >
             {content.title}
           </h1>
           {content.subtitle && (
