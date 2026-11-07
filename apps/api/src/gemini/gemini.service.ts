@@ -14,8 +14,8 @@ import {
 export class GeminiService {
   private readonly logger = new Logger(GeminiService.name);
   private aiClient: GoogleGenAI | null = null;
-  private readonly modelName: string;
-  private readonly apiKey: string;
+  private modelName: string;
+  private apiKey: string;
 
   constructor(private readonly configService?: ConfigService) {
     this.apiKey = this.configService?.get<string>('geminiApiKey') || process.env.GEMINI_API_KEY || '';
@@ -41,6 +41,60 @@ export class GeminiService {
     return this.modelName;
   }
 
+  getServerConfig() {
+    return {
+      hasApiKey: Boolean(this.apiKey && this.apiKey !== 'YOUR_GEMINI_API_KEY'),
+      model: this.modelName,
+      isLive: this.aiClient !== null,
+    };
+  }
+
+  updateServerConfig(newApiKey?: string, newModel?: string) {
+    if (newApiKey !== undefined && newApiKey.trim().length > 0) {
+      this.apiKey = newApiKey.trim();
+      try {
+        this.aiClient = new GoogleGenAI({ apiKey: this.apiKey });
+        this.logger.log(`Server default Gemini API key updated. Live API active with model: ${this.modelName}`);
+      } catch (err) {
+        this.logger.warn(`Failed to initialize with new API key: ${err}`);
+      }
+    }
+    if (newModel) {
+      this.modelName = newModel;
+      this.logger.log(`Server default Gemini model updated to: ${newModel}`);
+    }
+    return this.getServerConfig();
+  }
+
+  async testApiKey(keyToTest?: string): Promise<{ success: boolean; message: string; model: string }> {
+    const key = (keyToTest && keyToTest.trim().length > 0) ? keyToTest.trim() : this.apiKey;
+    if (!key || key === 'YOUR_GEMINI_API_KEY') {
+      return {
+        success: false,
+        message: 'No API key provided or configured on server.',
+        model: this.modelName,
+      };
+    }
+    try {
+      const client = new GoogleGenAI({ apiKey: key });
+      const res = await client.models.generateContent({
+        model: this.modelName,
+        contents: 'Test connection: reply with OK.',
+      });
+      return {
+        success: true,
+        message: `Successfully connected to Google Gemini API (${this.modelName}). Response: ${res.text?.slice(0, 40) || 'OK'}`,
+        model: this.modelName,
+      };
+    } catch (err: any) {
+      return {
+        success: false,
+        message: err?.message || 'Connection failed or invalid API key.',
+        model: this.modelName,
+      };
+    }
+  }
+
   /**
    * Generates a complete presentation with structured JSON output
    */
@@ -48,9 +102,24 @@ export class GeminiService {
     const startTime = Date.now();
     this.logger.log(`Generating presentation for topic: "${dto.prompt}" (${dto.slideCount} slides, theme: ${dto.theme})`);
 
-    if (this.aiClient) {
+    // Check if user provided their own custom API key (BYOK)
+    let clientToUse = this.aiClient;
+    const customKey = dto.apiKey?.trim();
+
+    if (customKey && customKey !== 'YOUR_GEMINI_API_KEY') {
       try {
-        return await this.generateWithLiveGemini(dto);
+        this.logger.log('Using user-provided custom Gemini API key for this request.');
+        clientToUse = new GoogleGenAI({ apiKey: customKey });
+      } catch (err) {
+        this.logger.warn(`Failed to initialize with custom key, falling back to server default: ${err}`);
+      }
+    } else {
+      this.logger.log('Using server admin default Gemini API configuration.');
+    }
+
+    if (clientToUse) {
+      try {
+        return await this.generateWithLiveGemini(dto, clientToUse);
       } catch (error) {
         this.logger.error(`Live Gemini generation failed or rate limited, falling back to deterministic generation engine: ${error}`);
         return this.generateDeterministicPresentation(dto);
@@ -138,7 +207,7 @@ Requirements: Keep it concise, impactful, professional. NO EMOJIS! Output only t
     }
   }
 
-  private async generateWithLiveGemini(dto: GeneratePresentationDto): Promise<PresentationDocument> {
+  private async generateWithLiveGemini(dto: GeneratePresentationDto, client: GoogleGenAI = this.aiClient!): Promise<PresentationDocument> {
     const prompt = this.buildPrompt(dto);
 
     // Exponential retry with backoff for rate limits
@@ -146,7 +215,7 @@ Requirements: Keep it concise, impactful, professional. NO EMOJIS! Output only t
     for (let attempt = 1; attempt <= 3; attempt++) {
       try {
         this.logger.log(`Calling Gemini API (attempt ${attempt}/3)...`);
-        const response = await this.aiClient!.models.generateContent({
+        const response = await client.models.generateContent({
           model: this.modelName,
           contents: prompt,
           config: {

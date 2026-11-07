@@ -13,6 +13,7 @@ import {
 import { Slide, SlideLayout } from '@ai-slide-studio/shared';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useI18n } from '@/components/i18n-provider';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -39,6 +40,8 @@ export function ThumbnailList({
   onDeleteSlide,
   onMoveSlide,
 }: ThumbnailListProps) {
+  const { t } = useI18n();
+
   const layoutOptions: { id: SlideLayout; label: string }[] = [
     { id: 'cover', label: 'Cover Slide' },
     { id: 'title-content', label: 'Title & Content' },
@@ -58,7 +61,7 @@ export function ThumbnailList({
       <div className="p-3 border-b border-border/50 flex items-center justify-between">
         <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
           <Layers className="h-3.5 w-3.5 text-primary" />
-          Slides ({slides.length})
+          {t.editor.slides} ({slides.length})
         </span>
 
         <DropdownMenu>
@@ -69,7 +72,7 @@ export function ThumbnailList({
               className="h-7 px-2 text-xs border-primary/30 text-primary hover:bg-primary/10 gap-1"
             >
               <Plus className="h-3 w-3" />
-              Add
+              {t.common.add}
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-48 text-xs max-h-80 overflow-y-auto">

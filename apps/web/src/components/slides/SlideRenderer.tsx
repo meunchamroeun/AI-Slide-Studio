@@ -28,12 +28,14 @@ import {
   Sparkles,
   ArrowRight,
 } from 'lucide-react';
+import { useGSAPAnimation } from '@/hooks/useGSAPAnimation';
 
 interface SlideRendererProps {
   slide: Slide;
   themeName?: string;
   className?: string;
   isInteractive?: boolean;
+  replayTrigger?: number;
 }
 
 // Icon mapper for Lucide React
@@ -75,9 +77,10 @@ export const SlideRenderer: React.FC<SlideRendererProps> = ({
   slide,
   themeName = 'modern-dark',
   className = '',
+  replayTrigger = 0,
 }) => {
   const theme: ThemeConfig = THEMES[themeName as keyof typeof THEMES] || THEMES['modern-dark'];
-  const content = slide.content;
+  const { containerRef } = useGSAPAnimation(slide.id, slide.animation, replayTrigger);
 
   const styleVariables = {
     '--bg': theme.colors.background,
@@ -96,20 +99,30 @@ export const SlideRenderer: React.FC<SlideRendererProps> = ({
 
   return (
     <div
+      ref={containerRef}
       style={styleVariables}
-      className={`w-full h-full p-[80px_110px_120px] flex flex-col justify-between select-none relative overflow-hidden bg-[var(--bg)] text-[var(--tx)] ${className}`}
+      className={`slide on w-full h-full p-[80px_110px_120px] flex flex-col justify-between select-none relative overflow-hidden bg-[var(--bg)] text-[var(--tx)] ${className}`}
     >
-      {/* Decorative ambient glow */}
-      <div
-        className="absolute -top-[160px] left-[20%] w-[600px] h-[600px] rounded-full blur-[140px] pointer-events-none opacity-40"
-        style={{ background: theme.colors.accentGlow }}
-      />
+      {/* Ambient background with dots and drifting glowing blobs matching ELMS presentation */}
+      <div className="bgfx absolute inset-0 pointer-events-none overflow-hidden select-none z-0">
+        <div className="dots absolute inset-0 opacity-45" />
+        <div
+          className="blob b1 absolute -top-[180px] -right-[120px] w-[700px] h-[700px] rounded-full blur-[130px] opacity-35 pointer-events-none"
+          style={{ background: theme.colors.accentGlow }}
+        />
+        <div
+          className="blob b2 absolute -bottom-[160px] -left-[120px] w-[520px] h-[520px] rounded-full blur-[120px] opacity-25 pointer-events-none"
+          style={{ background: theme.colors.accentSecondary }}
+        />
+      </div>
 
-      {/* Slide Layouts */}
-      {renderLayoutContent(slide, theme)}
+      {/* Slide Layout Content */}
+      <div className="relative z-10 w-full h-full flex flex-col justify-between">
+        {renderLayoutContent(slide, theme)}
+      </div>
 
       {/* Slide Number Watermark */}
-      <div className="absolute right-12 bottom-8 text-xs font-mono font-medium tracking-widest uppercase opacity-40 text-[var(--mu)]">
+      <div className="absolute right-12 bottom-8 text-xs font-mono font-medium tracking-widest uppercase opacity-40 text-[var(--mu)] z-20">
         {slide.slideNumber < 10 ? `0${slide.slideNumber}` : slide.slideNumber}
       </div>
     </div>
@@ -125,14 +138,19 @@ function renderLayoutContent(slide: Slide, theme: ThemeConfig) {
       return (
         <div className="flex flex-col items-center justify-center text-center h-full my-auto z-10">
           {content.badge && (
-            <div data-animate="badge" className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-mono font-semibold tracking-widest uppercase bg-[var(--badge-bg)] text-[var(--badge-tx)] border border-[var(--pb)] mb-8">
-              <Sparkles className="w-3.5 h-3.5" />
+            <div
+              data-animate="badge"
+              style={{ '--d': 0 } as any}
+              className="slide-elem inline-flex items-center gap-2 px-5 py-2 rounded-full text-xs font-mono font-semibold tracking-widest uppercase bg-[var(--badge-bg)] text-[var(--badge-tx)] border border-[var(--pb)] mb-8 shadow-lg backdrop-blur-md"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-[var(--pri)]" />
               {content.badge}
             </div>
           )}
           <h1
             data-animate="title"
-            className={`text-[84px] font-extrabold leading-[1.08] tracking-tight max-w-[1400px] mb-6 ${
+            style={{ '--d': 1 } as any}
+            className={`slide-elem text-[84px] font-extrabold leading-[1.08] tracking-tight max-w-[1400px] mb-6 ${
               isDark
                 ? 'bg-gradient-to-br from-white via-slate-100 to-slate-400 bg-clip-text text-transparent'
                 : 'text-[var(--tx)]'
@@ -141,7 +159,11 @@ function renderLayoutContent(slide: Slide, theme: ThemeConfig) {
             {content.title}
           </h1>
           {content.subtitle && (
-            <p data-animate="subtitle" className="text-[28px] leading-relaxed text-[var(--tx2)] max-w-[1000px] font-normal">
+            <p
+              data-animate="subtitle"
+              style={{ '--d': 2 } as any}
+              className="slide-elem text-[28px] leading-relaxed text-[var(--tx2)] max-w-[1000px] font-normal"
+            >
               {content.subtitle}
             </p>
           )}
@@ -153,20 +175,36 @@ function renderLayoutContent(slide: Slide, theme: ThemeConfig) {
         <div className="flex flex-col h-full z-10">
           <div>
             {content.badge && (
-              <div data-animate="badge" className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono font-semibold tracking-widest uppercase bg-[var(--badge-bg)] text-[var(--badge-tx)] border border-[var(--pb)] mb-4">
+              <div
+                data-animate="badge"
+                style={{ '--d': 0 } as any}
+                className="slide-elem slide-eyebrow mb-4"
+              >
                 {content.badge}
               </div>
             )}
-            <h2 data-animate="title" className="text-[52px] font-bold leading-tight tracking-tight text-[var(--tx)] mb-3">
+            <h2
+              data-animate="title"
+              style={{ '--d': 1 } as any}
+              className="slide-elem text-[52px] font-bold leading-tight tracking-tight text-[var(--tx)] mb-3"
+            >
               {content.title}
             </h2>
             {content.subtitle && (
-              <p data-animate="subtitle" className="text-[22px] text-[var(--tx2)] mb-8 max-w-[1200px]">
+              <p
+                data-animate="subtitle"
+                style={{ '--d': 2 } as any}
+                className="slide-elem text-[22px] text-[var(--tx2)] mb-8 max-w-[1200px]"
+              >
                 {content.subtitle}
               </p>
             )}
           </div>
-          <div data-animate="card" className="flex-1 rounded-2xl border border-[var(--pb)] bg-[var(--panel)] p-10 backdrop-blur-md shadow-2xl relative overflow-hidden flex flex-col justify-center">
+          <div
+            data-animate="card"
+            style={{ '--d': 3 } as any}
+            className="slide-elem slide-card flex-1 p-10 flex flex-col justify-center"
+          >
             <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-[var(--pri)] to-[var(--sec)]" />
             {content.body && (
               <p className="text-[22px] leading-relaxed text-[var(--tx2)] mb-8 font-normal">
@@ -176,7 +214,12 @@ function renderLayoutContent(slide: Slide, theme: ThemeConfig) {
             {content.bulletPoints && content.bulletPoints.length > 0 && (
               <ul className="flex flex-col gap-5 text-[21px] text-[var(--tx2)]">
                 {content.bulletPoints.map((point, idx) => (
-                  <li key={idx} data-animate="bullet" className="flex items-start gap-4">
+                  <li
+                    key={idx}
+                    data-animate="bullet"
+                    style={{ '--d': idx + 4 } as any}
+                    className="slide-elem flex items-start gap-4"
+                  >
                     <span className="flex-none w-7 h-7 rounded-full bg-[var(--badge-bg)] text-[var(--pri)] flex items-center justify-center mt-0.5 border border-[var(--pb)]">
                       <Check className="w-4 h-4 stroke-[2.5]" />
                     </span>
@@ -194,15 +237,27 @@ function renderLayoutContent(slide: Slide, theme: ThemeConfig) {
         <div className="flex flex-col h-full z-10">
           <div>
             {content.badge && (
-              <div data-animate="badge" className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono font-semibold tracking-widest uppercase bg-[var(--badge-bg)] text-[var(--badge-tx)] border border-[var(--pb)] mb-4">
+              <div
+                data-animate="badge"
+                style={{ '--d': 0 } as any}
+                className="slide-elem slide-eyebrow mb-4"
+              >
                 {content.badge}
               </div>
             )}
-            <h2 data-animate="title" className="text-[52px] font-bold leading-tight tracking-tight text-[var(--tx)] mb-3">
+            <h2
+              data-animate="title"
+              style={{ '--d': 1 } as any}
+              className="slide-elem text-[52px] font-bold leading-tight tracking-tight text-[var(--tx)] mb-3"
+            >
               {content.title}
             </h2>
             {content.subtitle && (
-              <p data-animate="subtitle" className="text-[22px] text-[var(--tx2)] mb-8">
+              <p
+                data-animate="subtitle"
+                style={{ '--d': 2 } as any}
+                className="slide-elem text-[22px] text-[var(--tx2)] mb-8"
+              >
                 {content.subtitle}
               </p>
             )}
@@ -212,11 +267,12 @@ function renderLayoutContent(slide: Slide, theme: ThemeConfig) {
               <div
                 key={feat.id || idx}
                 data-animate="card"
-                className="rounded-2xl border border-[var(--pb)] bg-[var(--panel)] p-9 backdrop-blur-md shadow-xl flex flex-col justify-between relative overflow-hidden group hover:border-[var(--pri)] transition-all"
+                style={{ '--d': idx + 3 } as any}
+                className="slide-elem slide-card p-9 flex flex-col justify-between"
               >
                 <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-[var(--pri)] to-[var(--sec)]" />
                 <div>
-                  <div className="w-14 h-14 rounded-xl bg-[var(--badge-bg)] text-[var(--pri)] flex items-center justify-center mb-6 border border-[var(--pb)]">
+                  <div className="w-14 h-14 rounded-2xl bg-[var(--badge-bg)] text-[var(--pri)] flex items-center justify-center mb-6 border border-[var(--pb)] shadow-lg">
                     {getLucideIcon(feat.icon, 'w-7 h-7')}
                   </div>
                   <h3 className="text-[26px] font-bold text-[var(--tx)] mb-3 leading-snug">
@@ -243,15 +299,27 @@ function renderLayoutContent(slide: Slide, theme: ThemeConfig) {
         <div className="flex flex-col h-full z-10">
           <div>
             {content.badge && (
-              <div data-animate="badge" className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono font-semibold tracking-widest uppercase bg-[var(--badge-bg)] text-[var(--badge-tx)] border border-[var(--pb)] mb-4">
+              <div
+                data-animate="badge"
+                style={{ '--d': 0 } as any}
+                className="slide-elem slide-eyebrow mb-4"
+              >
                 {content.badge}
               </div>
             )}
-            <h2 data-animate="title" className="text-[52px] font-bold leading-tight tracking-tight text-[var(--tx)] mb-3">
+            <h2
+              data-animate="title"
+              style={{ '--d': 1 } as any}
+              className="slide-elem text-[52px] font-bold leading-tight tracking-tight text-[var(--tx)] mb-3"
+            >
               {content.title}
             </h2>
             {content.subtitle && (
-              <p data-animate="subtitle" className="text-[22px] text-[var(--tx2)] mb-8">
+              <p
+                data-animate="subtitle"
+                style={{ '--d': 2 } as any}
+                className="slide-elem text-[22px] text-[var(--tx2)] mb-8"
+              >
                 {content.subtitle}
               </p>
             )}
@@ -261,11 +329,12 @@ function renderLayoutContent(slide: Slide, theme: ThemeConfig) {
               <div
                 key={stat.id || idx}
                 data-animate="card"
-                className="rounded-2xl border border-[var(--pb)] bg-[var(--panel)] p-10 backdrop-blur-md shadow-2xl flex flex-col items-center justify-center text-center relative overflow-hidden"
+                style={{ '--d': idx + 3 } as any}
+                className="slide-elem slide-card p-10 flex flex-col items-center justify-center text-center"
               >
                 <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-[var(--pri)] to-[var(--sec)]" />
-                <div className="w-14 h-14 rounded-full bg-[var(--badge-bg)] text-[var(--pri)] flex items-center justify-center mb-6 border border-[var(--pb)]">
-                  {getLucideIcon(stat.icon, 'w-7 h-7')}
+                <div className="w-16 h-16 rounded-2xl bg-[var(--badge-bg)] text-[var(--pri)] flex items-center justify-center mb-6 border border-[var(--pb)] shadow-lg">
+                  {getLucideIcon(stat.icon, 'w-8 h-8')}
                 </div>
                 <div
                   data-animate="counter"
@@ -273,7 +342,7 @@ function renderLayoutContent(slide: Slide, theme: ThemeConfig) {
                   data-suffix={stat.suffix || ''}
                   className={`text-[82px] font-extrabold leading-none tracking-tight mb-3 font-mono ${
                     isDark
-                      ? 'bg-gradient-to-br from-white via-slate-100 to-cyan-300 bg-clip-text text-transparent'
+                      ? 'bg-gradient-to-br from-white via-slate-100 to-amber-300 bg-clip-text text-transparent'
                       : 'text-[var(--pri)]'
                   }`}
                 >
@@ -298,15 +367,27 @@ function renderLayoutContent(slide: Slide, theme: ThemeConfig) {
         <div className="flex flex-col h-full z-10">
           <div>
             {content.badge && (
-              <div data-animate="badge" className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono font-semibold tracking-widest uppercase bg-[var(--badge-bg)] text-[var(--badge-tx)] border border-[var(--pb)] mb-4">
+              <div
+                data-animate="badge"
+                style={{ '--d': 0 } as any}
+                className="slide-elem slide-eyebrow mb-4"
+              >
                 {content.badge}
               </div>
             )}
-            <h2 data-animate="title" className="text-[52px] font-bold leading-tight tracking-tight text-[var(--tx)] mb-3">
+            <h2
+              data-animate="title"
+              style={{ '--d': 1 } as any}
+              className="slide-elem text-[52px] font-bold leading-tight tracking-tight text-[var(--tx)] mb-3"
+            >
               {content.title}
             </h2>
             {content.subtitle && (
-              <p data-animate="subtitle" className="text-[22px] text-[var(--tx2)] mb-8">
+              <p
+                data-animate="subtitle"
+                style={{ '--d': 2 } as any}
+                className="slide-elem text-[22px] text-[var(--tx2)] mb-8"
+              >
                 {content.subtitle}
               </p>
             )}
@@ -316,7 +397,8 @@ function renderLayoutContent(slide: Slide, theme: ThemeConfig) {
               <div
                 key={step.id || idx}
                 data-animate="card"
-                className="rounded-2xl border border-[var(--pb)] bg-[var(--panel)] p-8 backdrop-blur-md shadow-xl flex flex-col justify-between relative overflow-hidden"
+                style={{ '--d': idx + 3 } as any}
+                className="slide-elem slide-card p-8 flex flex-col justify-between"
               >
                 <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-[var(--pri)] to-[var(--sec)]" />
                 <div>
@@ -347,15 +429,27 @@ function renderLayoutContent(slide: Slide, theme: ThemeConfig) {
         <div className="flex flex-col h-full z-10">
           <div>
             {content.badge && (
-              <div data-animate="badge" className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono font-semibold tracking-widest uppercase bg-[var(--badge-bg)] text-[var(--badge-tx)] border border-[var(--pb)] mb-4">
+              <div
+                data-animate="badge"
+                style={{ '--d': 0 } as any}
+                className="slide-elem slide-eyebrow mb-4"
+              >
                 {content.badge}
               </div>
             )}
-            <h2 data-animate="title" className="text-[52px] font-bold leading-tight tracking-tight text-[var(--tx)] mb-3">
+            <h2
+              data-animate="title"
+              style={{ '--d': 1 } as any}
+              className="slide-elem text-[52px] font-bold leading-tight tracking-tight text-[var(--tx)] mb-3"
+            >
               {content.title}
             </h2>
             {content.subtitle && (
-              <p data-animate="subtitle" className="text-[22px] text-[var(--tx2)] mb-8">
+              <p
+                data-animate="subtitle"
+                style={{ '--d': 2 } as any}
+                className="slide-elem text-[22px] text-[var(--tx2)] mb-8"
+              >
                 {content.subtitle}
               </p>
             )}
@@ -363,7 +457,11 @@ function renderLayoutContent(slide: Slide, theme: ThemeConfig) {
           <div className="grid grid-cols-2 gap-8 flex-1 items-stretch">
             {content.comparison && (
               <>
-                <div data-animate="card" className="rounded-2xl border border-[var(--pb)] bg-[var(--panel)] p-10 backdrop-blur-md shadow-xl flex flex-col justify-between relative">
+                <div
+                  data-animate="card"
+                  style={{ '--d': 3 } as any}
+                  className="slide-elem slide-card p-10 flex flex-col justify-between"
+                >
                   <div>
                     <div className="text-xs font-mono font-bold tracking-widest text-red-400 mb-2 uppercase">
                       {content.comparison.left.tag || 'CONVENTIONAL APPROACH'}
@@ -384,7 +482,11 @@ function renderLayoutContent(slide: Slide, theme: ThemeConfig) {
                   </div>
                 </div>
 
-                <div data-animate="card" className="rounded-2xl border border-[var(--pri)] bg-[var(--panel)] p-10 backdrop-blur-md shadow-2xl flex flex-col justify-between relative glow-border">
+                <div
+                  data-animate="card"
+                  style={{ '--d': 4 } as any}
+                  className="slide-elem slide-card p-10 flex flex-col justify-between border-[var(--pri)] shadow-2xl"
+                >
                   <div className="absolute top-0 left-0 right-0 h-[4px] bg-gradient-to-r from-[var(--pri)] to-[var(--sec)]" />
                   <div>
                     <div className="flex items-center justify-between mb-2">
@@ -423,25 +525,45 @@ function renderLayoutContent(slide: Slide, theme: ThemeConfig) {
         <div className="flex flex-col h-full z-10">
           <div>
             {content.badge && (
-              <div data-animate="badge" className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono font-semibold tracking-widest uppercase bg-[var(--badge-bg)] text-[var(--badge-tx)] border border-[var(--pb)] mb-4">
+              <div
+                data-animate="badge"
+                style={{ '--d': 0 } as any}
+                className="slide-elem slide-eyebrow mb-4"
+              >
                 {content.badge}
               </div>
             )}
-            <h2 data-animate="title" className="text-[52px] font-bold leading-tight tracking-tight text-[var(--tx)] mb-3">
+            <h2
+              data-animate="title"
+              style={{ '--d': 1 } as any}
+              className="slide-elem text-[52px] font-bold leading-tight tracking-tight text-[var(--tx)] mb-3"
+            >
               {content.title}
             </h2>
             {content.subtitle && (
-              <p data-animate="subtitle" className="text-[22px] text-[var(--tx2)] mb-8">
+              <p
+                data-animate="subtitle"
+                style={{ '--d': 2 } as any}
+                className="slide-elem text-[22px] text-[var(--tx2)] mb-8">
                 {content.subtitle}
               </p>
             )}
           </div>
-          <div data-animate="card" className="flex-1 rounded-2xl border border-[var(--pb)] bg-[var(--panel)] p-12 backdrop-blur-md shadow-2xl relative overflow-hidden flex flex-col justify-center">
+          <div
+            data-animate="card"
+            style={{ '--d': 3 } as any}
+            className="slide-elem slide-card flex-1 p-12 flex flex-col justify-center"
+          >
             <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-[var(--pri)] to-[var(--sec)]" />
             <ul className="flex flex-col gap-7 text-[23px] text-[var(--tx2)]">
               {(content.takeaways || []).map((item, idx) => (
-                <li key={idx} data-animate="bullet" className="flex items-start gap-5">
-                  <span className="w-9 h-9 rounded-full bg-[var(--badge-bg)] text-[var(--pri)] flex items-center justify-center flex-none mt-0.5 border border-[var(--pb)]">
+                <li
+                  key={idx}
+                  data-animate="bullet"
+                  style={{ '--d': idx + 4 } as any}
+                  className="slide-elem flex items-start gap-5"
+                >
+                  <span className="w-9 h-9 rounded-full bg-[var(--badge-bg)] text-[var(--pri)] flex items-center justify-center flex-none mt-0.5 border border-[var(--pb)] shadow-md">
                     <CheckCircle2 className="w-5 h-5 stroke-[2.5]" />
                   </span>
                   <span className="leading-snug">{item}</span>
@@ -457,30 +579,50 @@ function renderLayoutContent(slide: Slide, theme: ThemeConfig) {
         <div className="flex flex-col h-full z-10">
           <div>
             {content.badge && (
-              <div data-animate="badge" className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono font-semibold tracking-widest uppercase bg-[var(--badge-bg)] text-[var(--badge-tx)] border border-[var(--pb)] mb-4">
+              <div
+                data-animate="badge"
+                style={{ '--d': 0 } as any}
+                className="slide-elem slide-eyebrow mb-4"
+              >
                 {content.badge}
               </div>
             )}
-            <h2 data-animate="title" className="text-[52px] font-bold leading-tight tracking-tight text-[var(--tx)] mb-3">
+            <h2
+              data-animate="title"
+              style={{ '--d': 1 } as any}
+              className="slide-elem text-[52px] font-bold leading-tight tracking-tight text-[var(--tx)] mb-3"
+            >
               {content.title}
             </h2>
             {content.subtitle && (
-              <p data-animate="subtitle" className="text-[22px] text-[var(--tx2)] mb-8">
+              <p
+                data-animate="subtitle"
+                style={{ '--d': 2 } as any}
+                className="slide-elem text-[22px] text-[var(--tx2)] mb-8"
+              >
                 {content.subtitle}
               </p>
             )}
           </div>
           <div className="grid grid-cols-2 gap-8 flex-1 items-stretch">
-            <div data-animate="card" className="rounded-2xl border border-[var(--pb)] bg-[var(--panel)] p-10 backdrop-blur-md shadow-xl relative overflow-hidden flex flex-col justify-center">
-              <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-[var(--pri)] to-[var(--sec)]" />
-              <p className="text-[21px] leading-relaxed text-[var(--tx2)] whitespace-pre-line">
-                {content.leftColumn}
+            <div
+              data-animate="card"
+              style={{ '--d': 3 } as any}
+              className="slide-elem slide-card p-10 flex flex-col justify-center"
+            >
+              <div className="absolute top-0 left-0 right-0 h-[3px] bg-[var(--pri)]" />
+              <p className="text-[21px] leading-relaxed text-[var(--tx2)] whitespace-pre-line font-normal">
+                {content.leftColumn || ''}
               </p>
             </div>
-            <div data-animate="card" className="rounded-2xl border border-[var(--pb)] bg-[var(--panel)] p-10 backdrop-blur-md shadow-xl relative overflow-hidden flex flex-col justify-center">
-              <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-[var(--sec)] to-[var(--pri)]" />
-              <p className="text-[21px] leading-relaxed text-[var(--tx2)] whitespace-pre-line">
-                {content.rightColumn}
+            <div
+              data-animate="card"
+              style={{ '--d': 4 } as any}
+              className="slide-elem slide-card p-10 flex flex-col justify-center"
+            >
+              <div className="absolute top-0 left-0 right-0 h-[3px] bg-[var(--sec)]" />
+              <p className="text-[21px] leading-relaxed text-[var(--tx2)] whitespace-pre-line font-normal">
+                {content.rightColumn || ''}
               </p>
             </div>
           </div>
@@ -492,30 +634,51 @@ function renderLayoutContent(slide: Slide, theme: ThemeConfig) {
         <div className="flex flex-col h-full z-10">
           <div>
             {content.badge && (
-              <div data-animate="badge" className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono font-semibold tracking-widest uppercase bg-[var(--badge-bg)] text-[var(--badge-tx)] border border-[var(--pb)] mb-4">
+              <div
+                data-animate="badge"
+                style={{ '--d': 0 } as any}
+                className="slide-elem slide-eyebrow mb-4"
+              >
                 {content.badge}
               </div>
             )}
-            <h2 data-animate="title" className="text-[52px] font-bold leading-tight tracking-tight text-[var(--tx)] mb-3">
+            <h2
+              data-animate="title"
+              style={{ '--d': 1 } as any}
+              className="slide-elem text-[52px] font-bold leading-tight tracking-tight text-[var(--tx)] mb-3"
+            >
               {content.title}
             </h2>
             {content.subtitle && (
-              <p data-animate="subtitle" className="text-[22px] text-[var(--tx2)] mb-8">
+              <p
+                data-animate="subtitle"
+                style={{ '--d': 2 } as any}
+                className="slide-elem text-[22px] text-[var(--tx2)] mb-8"
+              >
                 {content.subtitle}
               </p>
             )}
           </div>
           <div className="grid grid-cols-2 gap-8 flex-1 items-stretch">
-            <div data-animate="card" className="rounded-2xl border border-[var(--pb)] bg-[var(--panel)] p-10 backdrop-blur-md shadow-xl flex flex-col justify-center">
+            <div
+              data-animate="card"
+              style={{ '--d': 3 } as any}
+              className="slide-elem slide-card p-10 flex flex-col justify-center"
+            >
               {content.body && (
-                <p className="text-[21px] leading-relaxed text-[var(--tx2)] mb-6">
+                <p className="text-[21px] leading-relaxed text-[var(--tx2)] mb-6 font-normal">
                   {content.body}
                 </p>
               )}
               {content.bulletPoints && content.bulletPoints.length > 0 && (
                 <ul className="flex flex-col gap-4 text-[19px] text-[var(--tx2)]">
                   {content.bulletPoints.map((b, i) => (
-                    <li key={i} className="flex items-start gap-3">
+                    <li
+                      key={i}
+                      data-animate="bullet"
+                      style={{ '--d': i + 4 } as any}
+                      className="slide-elem flex items-start gap-3"
+                    >
                       <span className="w-6 h-6 rounded-full bg-[var(--badge-bg)] text-[var(--pri)] flex items-center justify-center flex-none mt-0.5">
                         <Check className="w-3.5 h-3.5" />
                       </span>
@@ -525,7 +688,11 @@ function renderLayoutContent(slide: Slide, theme: ThemeConfig) {
                 </ul>
               )}
             </div>
-            <div data-animate="card" className="rounded-2xl border border-[var(--pb)] bg-[var(--panel)] p-8 backdrop-blur-md shadow-xl flex flex-col items-center justify-center text-center relative overflow-hidden">
+            <div
+              data-animate="card"
+              style={{ '--d': 4 } as any}
+              className="slide-elem slide-card p-8 flex flex-col items-center justify-center text-center relative overflow-hidden"
+            >
               <div className="w-full h-full min-h-[300px] rounded-xl bg-gradient-to-br from-indigo-950/60 to-purple-950/40 border border-[var(--pb)] flex flex-col items-center justify-center p-8">
                 <div className="w-20 h-20 rounded-2xl bg-[var(--badge-bg)] text-[var(--pri)] flex items-center justify-center mb-6 border border-[var(--pb)] shadow-xl">
                   <Layers className="w-10 h-10" />
@@ -543,16 +710,32 @@ function renderLayoutContent(slide: Slide, theme: ThemeConfig) {
       return (
         <div className="flex flex-col h-full justify-center z-10 max-w-[1500px] mx-auto w-full">
           {content.badge && (
-            <div data-animate="badge" className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono font-semibold tracking-widest uppercase bg-[var(--badge-bg)] text-[var(--badge-tx)] border border-[var(--pb)] mb-8 w-fit">
+            <div
+              data-animate="badge"
+              style={{ '--d': 0 } as any}
+              className="slide-elem slide-eyebrow mb-8 w-fit"
+            >
               {content.badge}
             </div>
           )}
-          <div data-animate="card" className="rounded-3xl border border-[var(--pb)] bg-[var(--panel)] p-16 backdrop-blur-xl shadow-2xl relative overflow-hidden">
+          <div
+            data-animate="card"
+            style={{ '--d': 1 } as any}
+            className="slide-elem slide-card p-16"
+          >
             <QuoteIcon className="w-16 h-16 text-[var(--pri)] opacity-30 mb-6" />
-            <blockquote data-animate="title" className="text-[40px] leading-snug font-medium italic text-[var(--tx)] mb-8">
+            <blockquote
+              data-animate="title"
+              style={{ '--d': 2 } as any}
+              className="slide-elem text-[40px] leading-snug font-medium italic text-[var(--tx)] mb-8"
+            >
               "{content.quote}"
             </blockquote>
-            <div data-animate="subtitle">
+            <div
+              data-animate="subtitle"
+              style={{ '--d': 3 } as any}
+              className="slide-elem"
+            >
               <div className="text-[26px] font-bold text-[var(--pri)]">
                 {content.author}
               </div>
@@ -569,13 +752,19 @@ function renderLayoutContent(slide: Slide, theme: ThemeConfig) {
       return (
         <div className="flex flex-col items-center justify-center text-center h-full my-auto z-10">
           {content.badge && (
-            <div data-animate="badge" className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-mono font-semibold tracking-widest uppercase bg-[var(--badge-bg)] text-[var(--badge-tx)] border border-[var(--pb)] mb-8">
+            <div
+              data-animate="badge"
+              style={{ '--d': 0 } as any}
+              className="slide-elem inline-flex items-center gap-2 px-5 py-2 rounded-full text-xs font-mono font-semibold tracking-widest uppercase bg-[var(--badge-bg)] text-[var(--badge-tx)] border border-[var(--pb)] mb-8 shadow-lg backdrop-blur-md"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-[var(--pri)]" />
               {content.badge}
             </div>
           )}
           <h1
             data-animate="title"
-            className={`text-[96px] font-extrabold leading-tight tracking-tight mb-6 ${
+            style={{ '--d': 1 } as any}
+            className={`slide-elem text-[96px] font-extrabold leading-tight tracking-tight mb-6 ${
               isDark
                 ? 'bg-gradient-to-br from-white to-slate-300 bg-clip-text text-transparent'
                 : 'text-[var(--tx)]'
@@ -584,12 +773,20 @@ function renderLayoutContent(slide: Slide, theme: ThemeConfig) {
             {content.title}
           </h1>
           {content.subtitle && (
-            <p data-animate="subtitle" className="text-[30px] text-[var(--tx2)] max-w-[900px] mb-12">
+            <p
+              data-animate="subtitle"
+              style={{ '--d': 2 } as any}
+              className="slide-elem text-[30px] text-[var(--tx2)] max-w-[900px] mb-12"
+            >
               {content.subtitle}
             </p>
           )}
           {content.ctaText && (
-            <div data-animate="card">
+            <div
+              data-animate="card"
+              style={{ '--d': 3 } as any}
+              className="slide-elem"
+            >
               <button className="px-10 py-5 rounded-full bg-gradient-to-r from-[var(--pri)] to-[var(--sec)] text-white font-bold text-xl shadow-2xl shadow-[var(--glow)] hover:opacity-95 transition-all flex items-center gap-3 cursor-pointer">
                 <span>{content.ctaText}</span>
                 <ArrowRight className="w-6 h-6" />

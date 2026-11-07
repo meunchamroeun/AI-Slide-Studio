@@ -1,14 +1,16 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Sidebar } from '@/components/navigation/Sidebar';
-import { Header } from '@/components/navigation/Header';
+import { AppShell, AppPage } from '@/components/app/app-shell';
 import { PromptGeneratorModal } from '@/components/generator/PromptGeneratorModal';
 import { QuickTemplates } from '@/components/dashboard/QuickTemplates';
-import { LayoutTemplate, Sparkles } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { useI18n } from '@/components/i18n-provider';
 
 export default function TemplatesPage() {
+  const { t } = useI18n();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPrompt, setSelectedPrompt] = useState('');
 
@@ -18,40 +20,45 @@ export default function TemplatesPage() {
   };
 
   return (
-    <div className="flex min-h-screen bg-background">
-      <Sidebar onOpenCreate={() => handleSelectTemplate('')} />
-
-      <div className="flex-1 flex flex-col min-w-0">
-        <Header
-          title="Presentation Templates"
-          onOpenCreate={() => handleSelectTemplate('')}
-        />
-
-        <main className="flex-1 p-6 md:p-8 space-y-8 max-w-7xl mx-auto w-full overflow-y-auto">
+    <AppShell onOpenCreate={() => handleSelectTemplate('')}>
+      <AppPage
+        title={t.nav.templates}
+        actions={
+          <Button
+            size="sm"
+            onClick={() => handleSelectTemplate('')}
+            className="rounded-full bg-primary text-primary-foreground text-xs font-medium px-3.5 h-8 gap-1.5 shadow-sm hover:opacity-95 cursor-pointer"
+          >
+            <Sparkles className="size-3.5 text-brand" />
+            <span className="hidden sm:inline">{t.templates.customPrompt}</span>
+            <span className="sm:hidden">{t.common.create}</span>
+          </Button>
+        }
+      >
+        <div className="space-y-8 pb-12">
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <Badge variant="outline" className="text-primary border-primary/30 text-xs">
-                Pre-engineered Prompts
+              <Badge variant="outline" className="text-brand border-brand/30 text-xs rounded-full bg-brand/5">
+                {t.templates.preEngineered}
               </Badge>
             </div>
-            <h2 className="text-2xl font-bold tracking-tight text-foreground">
-              Production Template Gallery
+            <h2 className="text-2xl font-serif font-medium tracking-tight text-foreground">
+              {t.templates.galleryTitle}
             </h2>
             <p className="text-xs text-muted-foreground max-w-xl leading-relaxed">
-              Select a template below to automatically configure optimal slide counts, themes,
-              and executive messaging structures.
+              {t.templates.gallerySubtitle}
             </p>
           </div>
 
           <QuickTemplates onSelectTemplate={handleSelectTemplate} />
-        </main>
-      </div>
+        </div>
+      </AppPage>
 
       <PromptGeneratorModal
         open={isModalOpen}
         onOpenChange={setIsModalOpen}
         initialPrompt={selectedPrompt}
       />
-    </div>
+    </AppShell>
   );
 }

@@ -32,6 +32,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useI18n } from '@/components/i18n-provider';
 
 interface PropertyPanelProps {
   slide: Slide;
@@ -54,6 +55,7 @@ export function PropertyPanel({
   onSetTransition,
   onSetNotes,
 }: PropertyPanelProps) {
+  const { t } = useI18n();
   const content = slide.content || { title: '' };
 
   const handleTitleChange = (val: string) => {
@@ -115,13 +117,13 @@ export function PropertyPanel({
         <div className="p-3 border-b border-border/50 bg-card/60">
           <TabsList className="grid grid-cols-3 w-full h-8 bg-secondary/50">
             <TabsTrigger value="content" className="text-xs">
-              Content
+              {t.editor.content}
             </TabsTrigger>
             <TabsTrigger value="layout" className="text-xs">
-              Design
+              {t.editor.design}
             </TabsTrigger>
             <TabsTrigger value="animation" className="text-xs">
-              Motion
+              {t.editor.motion}
             </TabsTrigger>
           </TabsList>
         </div>
@@ -132,19 +134,19 @@ export function PropertyPanel({
           <div className="space-y-1.5">
             <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
               <Type className="h-3.5 w-3.5 text-primary" />
-              Slide Title
+              {t.editor.titleField}
             </label>
             <Input
               value={content.title || ''}
               onChange={(e) => handleTitleChange(e.target.value)}
-              placeholder="Slide Title"
+              placeholder={t.editor.titleField}
               className="text-xs bg-background/60"
             />
           </div>
 
           {/* Subtitle */}
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-foreground">Subtitle / Lead</label>
+            <label className="text-xs font-semibold text-foreground">{t.editor.subtitleField}</label>
             <Textarea
               value={content.subtitle || ''}
               onChange={(e) => handleSubtitleChange(e.target.value)}
@@ -157,7 +159,7 @@ export function PropertyPanel({
           {/* Bullet Points */}
           <div className="space-y-2 pt-2 border-t border-border/40">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-semibold text-foreground">Bullet Points</label>
+              <label className="text-xs font-semibold text-foreground">{t.editor.bulletPoints}</label>
               <Button
                 size="sm"
                 variant="ghost"

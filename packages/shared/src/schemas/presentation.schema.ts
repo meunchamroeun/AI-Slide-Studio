@@ -214,6 +214,7 @@ export const GeneratePresentationDtoSchema = z.object({
   aspectRatio: AspectRatioEnum.default('16:9'),
   animationStyle: z.enum(['subtle', 'dynamic', 'cinematic', 'minimal']).default('dynamic'),
   visualAssetPreference: z.enum(['illustrations', 'geometric', 'charts', 'mixed']).default('mixed'),
+  apiKey: z.string().optional(),
 });
 
 export const RegenerateSlideDtoSchema = z.object({

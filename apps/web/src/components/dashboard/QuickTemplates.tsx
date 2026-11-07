@@ -14,12 +14,14 @@ import {
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { useI18n } from '@/components/i18n-provider';
 
 interface QuickTemplatesProps {
   onSelectTemplate: (prompt: string) => void;
 }
 
 export function QuickTemplates({ onSelectTemplate }: QuickTemplatesProps) {
+  const { t } = useI18n();
   const templates = [
     {
       id: 'executive-pitch',
@@ -87,12 +89,12 @@ export function QuickTemplates({ onSelectTemplate }: QuickTemplatesProps) {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-bold tracking-tight text-foreground flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-primary" />
-            Curated Templates
+          <h3 className="text-lg font-serif font-medium tracking-tight text-foreground flex items-center gap-2">
+            <Sparkles className="size-4 text-brand" />
+            {t.templates.title}
           </h3>
-          <p className="text-xs text-muted-foreground">
-            Kickstart your slides with production-tested outlines and layout hierarchies
+          <p className="text-xs text-muted-foreground mt-0.5">
+            {t.templates.subtitle}
           </p>
         </div>
       </div>
@@ -101,26 +103,29 @@ export function QuickTemplates({ onSelectTemplate }: QuickTemplatesProps) {
         {templates.map((tpl) => {
           const Icon = tpl.icon;
           return (
-            <Card
+            <div
               key={tpl.id}
               onClick={() => onSelectTemplate(tpl.prompt)}
-              className="group p-4 bg-card/60 hover:bg-card/90 border-border/70 hover:border-primary/40 transition-all duration-200 cursor-pointer flex flex-col justify-between shadow-sm hover:shadow-lg"
+              className="group relative rounded-2xl bg-card border border-border/80 shadow-md ring-1 ring-border/50 hover:ring-brand/40 hover:border-brand/40 transition-all duration-200 cursor-pointer flex flex-col justify-between overflow-hidden p-4 select-none hover:shadow-xl"
             >
+              {/* Specular top highlight */}
+              <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-brand/40 to-transparent" />
+
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <div className="h-9 w-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center group-hover:scale-105 transition-transform">
-                    <Icon className="h-4 w-4" />
+                  <div className="size-9 rounded-xl bg-brand/10 text-brand flex items-center justify-center group-hover:scale-105 group-hover:bg-brand/20 transition-all">
+                    <Icon className="size-4" />
                   </div>
-                  <Badge variant="secondary" className="text-[10px] font-mono">
+                  <Badge variant="secondary" className="text-[10px] font-mono rounded-full bg-secondary/80 border border-border/50 px-2.5">
                     {tpl.slides}
                   </Badge>
                 </div>
 
                 <div className="space-y-1">
-                  <span className="text-[10px] text-muted-foreground uppercase font-semibold tracking-wider">
+                  <span className="text-[10px] text-brand/80 font-semibold uppercase tracking-wider block">
                     {tpl.category}
                   </span>
-                  <h4 className="text-sm font-bold text-foreground group-hover:text-primary transition-colors">
+                  <h4 className="text-sm font-semibold text-foreground group-hover:text-brand transition-colors">
                     {tpl.title}
                   </h4>
                   <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
@@ -130,13 +135,13 @@ export function QuickTemplates({ onSelectTemplate }: QuickTemplatesProps) {
               </div>
 
               <div className="pt-3 mt-3 border-t border-border/40 flex items-center justify-between text-xs text-muted-foreground group-hover:text-foreground">
-                <span className="text-[11px] font-medium">{tpl.theme}</span>
-                <span className="flex items-center gap-1 text-[11px] font-semibold text-primary">
-                  Use Template
-                  <ArrowRight className="h-3 w-3 group-hover:translate-x-0.5 transition-transform" />
+                <span className="text-[11px] font-medium text-muted-foreground">{tpl.theme}</span>
+                <span className="flex items-center gap-1 text-[11px] font-medium text-brand">
+                  {t.templates.useTemplate}
+                  <ArrowRight className="size-3 group-hover:translate-x-0.5 transition-transform" />
                 </span>
               </div>
-            </Card>
+            </div>
           );
         })}
       </div>

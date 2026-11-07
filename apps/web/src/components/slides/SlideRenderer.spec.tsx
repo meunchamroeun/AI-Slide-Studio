@@ -41,6 +41,19 @@ describe('SlideRenderer', () => {
       id: 'slide-2',
       slideNumber: 2,
       layout: 'statistics',
+      notes: 'Operational metrics breakdown',
+      animation: {
+        preset: 'fade-in',
+        duration: 0.8,
+        delay: 0,
+        easing: 'power2.out',
+        direction: 'none',
+      },
+      transition: {
+        type: 'fade',
+        duration: 0.6,
+        easing: 'power2.out',
+      },
       content: {
         title: 'Key Operational Metrics',
         statistics: [
@@ -62,6 +75,19 @@ describe('SlideRenderer', () => {
       id: 'slide-3',
       slideNumber: 3,
       layout: 'quote',
+      notes: 'Key industry quote',
+      animation: {
+        preset: 'fade-in',
+        duration: 0.8,
+        delay: 0,
+        easing: 'power2.out',
+        direction: 'none',
+      },
+      transition: {
+        type: 'fade',
+        duration: 0.6,
+        easing: 'power2.out',
+      },
       content: {
         title: 'Industry Perspective',
         quote: 'Autonomous coding agents are revolutionizing the velocity of software development.',

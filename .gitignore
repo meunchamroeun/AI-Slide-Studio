@@ -8,6 +8,10 @@ build
 .next
 out
 .turbo
+*.tsbuildinfo
+
+# Scratch & Temporary
+scratch/
 
 # Environment variables
 .env

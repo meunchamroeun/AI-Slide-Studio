@@ -12,6 +12,7 @@ import {
   Play,
   Download,
   FileCode,
+  FileText,
   FileUp,
   RotateCcw,
   ChevronLeft,
@@ -32,6 +33,9 @@ import {
 import { SaveStatus } from '@/hooks/useEditorStore';
 import { PresentationDocument } from '@ai-slide-studio/shared';
 import { api } from '@/services/api';
+import { useI18n } from '@/components/i18n-provider';
+import { LanguageToggle } from '@/components/language-toggle';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 interface EditorToolbarProps {
   document: PresentationDocument;
@@ -59,6 +63,7 @@ export function EditorToolbar({
   onImportDocument,
 }: EditorToolbarProps) {
   const router = useRouter();
+  const { t } = useI18n();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isExporting, setIsExporting] = React.useState(false);
 
@@ -77,6 +82,25 @@ export function EditorToolbar({
       URL.revokeObjectURL(url);
     } catch (err: any) {
       alert(`Export failed: ${err.message}`);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleExportPdf = async () => {
+    try {
+      setIsExporting(true);
+      const blob = await api.exportPdf(document.id);
+      const url = URL.createObjectURL(blob);
+      const a = window.document.createElement('a');
+      a.href = url;
+      a.download = `${document.title.toLowerCase().replace(/[^a-z0-9]/g, '_')}_presentation.pdf`;
+      window.document.body.appendChild(a);
+      a.click();
+      window.document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err: any) {
+      alert(`PDF Export failed: ${err.message}`);
     } finally {
       setIsExporting(false);
     }
@@ -129,10 +153,10 @@ export function EditorToolbar({
       <div className="flex items-center gap-3">
         <Link
           href="/presentations"
-          className="h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-colors"
-          title="Back to Presentations"
+          className="size-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+          title={t.editor.backToPres}
         >
-          <ChevronLeft className="h-5 w-5" />
+          <ChevronLeft className="size-4" />
         </Link>
 
         <div className="h-4 w-px bg-border/60" />
@@ -141,8 +165,8 @@ export function EditorToolbar({
         <Input
           value={document.title}
           onChange={(e) => onTitleChange(e.target.value)}
-          className="h-8 w-60 sm:w-80 font-semibold text-sm bg-transparent border-transparent hover:border-border/60 focus:border-primary px-2"
-          placeholder="Presentation Title"
+          className="h-8 w-60 sm:w-80 font-serif font-medium text-sm bg-transparent border-transparent hover:border-border/60 focus:border-brand/70 rounded-lg px-2"
+          placeholder={t.editor.titleField}
         />
 
         {/* Save Status Badge */}
@@ -152,77 +176,82 @@ export function EditorToolbar({
           title="Click to save now"
         >
           {saveStatus === 'saved' && (
-            <Badge variant="outline" className="text-[10px] text-emerald-400 border-emerald-500/30 gap-1 bg-emerald-500/5">
-              <CheckCircle2 className="h-3 w-3" />
-              Saved
+            <Badge variant="outline" className="text-[10px] text-emerald-400 border-emerald-500/30 gap-1 bg-emerald-500/5 rounded-full px-2.5">
+              <CheckCircle2 className="size-3" />
+              {t.editor.saved}
             </Badge>
           )}
           {saveStatus === 'saving' && (
-            <Badge variant="outline" className="text-[10px] text-primary border-primary/30 gap-1 bg-primary/5">
-              <Loader2 className="h-3 w-3 animate-spin" />
-              Saving...
+            <Badge variant="outline" className="text-[10px] text-brand border-brand/30 gap-1 bg-brand/5 rounded-full px-2.5">
+              <Loader2 className="size-3 animate-spin" />
+              {t.editor.saving}
             </Badge>
           )}
           {saveStatus === 'unsaved' && (
-            <Badge variant="outline" className="text-[10px] text-amber-400 border-amber-500/30 gap-1 bg-amber-500/5">
-              <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />
-              Unsaved
+            <Badge variant="outline" className="text-[10px] text-amber-400 border-amber-500/30 gap-1 bg-amber-500/5 rounded-full px-2.5">
+              <span className="size-1.5 rounded-full bg-amber-400" />
+              {t.editor.unsaved}
             </Badge>
           )}
           {saveStatus === 'error' && (
-            <Badge variant="outline" className="text-[10px] text-destructive border-destructive/30 gap-1 bg-destructive/5">
-              <AlertCircle className="h-3 w-3" />
-              Save Error
+            <Badge variant="outline" className="text-[10px] text-destructive border-destructive/30 gap-1 bg-destructive/5 rounded-full px-2.5">
+              <AlertCircle className="size-3" />
+              {t.editor.saveError}
             </Badge>
           )}
         </div>
       </div>
 
       {/* Center: Undo / Redo / Replay */}
-      <div className="flex items-center gap-1 bg-secondary/30 p-1 rounded-lg border border-border/40">
+      <div className="flex items-center gap-1 bg-secondary/40 p-1 rounded-full border border-border/50">
         <Button
           variant="ghost"
           size="icon"
           onClick={onUndo}
           disabled={!canUndo}
-          className="h-7 w-7 text-muted-foreground hover:text-foreground disabled:opacity-40"
-          title="Undo (Ctrl+Z)"
+          className="size-7 rounded-full text-muted-foreground hover:text-foreground disabled:opacity-40"
+          title={t.editor.undo}
         >
-          <Undo2 className="h-3.5 w-3.5" />
+          <Undo2 className="size-3.5" />
         </Button>
         <Button
           variant="ghost"
           size="icon"
           onClick={onRedo}
           disabled={!canRedo}
-          className="h-7 w-7 text-muted-foreground hover:text-foreground disabled:opacity-40"
-          title="Redo (Ctrl+Y)"
+          className="size-7 rounded-full text-muted-foreground hover:text-foreground disabled:opacity-40"
+          title={t.editor.redo}
         >
-          <Redo2 className="h-3.5 w-3.5" />
+          <Redo2 className="size-3.5" />
         </Button>
         <div className="h-3.5 w-px bg-border/60 mx-1" />
         <Button
           variant="ghost"
           size="sm"
           onClick={onReplayAnimation}
-          className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground gap-1"
+          className="h-7 px-2.5 text-xs text-muted-foreground hover:text-foreground gap-1 rounded-full cursor-pointer"
           title="Replay slide animations"
         >
-          <RotateCcw className="h-3 w-3" />
-          Replay
+          <RotateCcw className="size-3 text-brand" />
+          {t.editor.replay}
         </Button>
       </div>
 
-      {/* Right: Present & Export actions */}
+      {/* Right: Toggles + Present & Export actions */}
       <div className="flex items-center gap-2">
+        <LanguageToggle />
+        <ThemeToggle />
+
+        <div className="h-4 w-px bg-border/60 mx-0.5" />
+
         <Button
           variant="outline"
           size="sm"
           onClick={() => router.push(`/presentations/${document.id}/present`)}
-          className="h-8 text-xs border-border/70 hover:border-primary/50 text-foreground gap-1.5"
+          className="h-8 text-xs border-border/80 hover:border-brand/50 text-foreground gap-1.5 rounded-full px-3.5 cursor-pointer"
         >
-          <Play className="h-3.5 w-3.5 text-primary" />
-          Present
+          <Play className="size-3.5 text-brand" />
+          {t.editor.present}
         </Button>
 
         <DropdownMenu>
@@ -230,40 +259,29 @@ export function EditorToolbar({
             <Button
               size="sm"
               disabled={isExporting}
-              className="h-8 bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-medium gap-1.5 shadow-md shadow-primary/20"
+              className="h-8 bg-primary hover:opacity-95 text-primary-foreground text-xs font-medium gap-1.5 shadow-md rounded-full px-4 cursor-pointer"
             >
               {isExporting ? (
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                <Loader2 className="size-3.5 animate-spin" />
               ) : (
-                <Download className="h-3.5 w-3.5" />
+                <Download className="size-3.5" />
               )}
-              Export
+              {t.editor.export}
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56 text-xs">
-            <DropdownMenuItem onClick={handleExportHtml} className="cursor-pointer">
-              <FileCode className="mr-2 h-4 w-4 text-primary" />
+          <DropdownMenuContent align="end" className="w-64 text-xs bg-card border-border/80 p-1.5 shadow-xl rounded-xl">
+            <DropdownMenuItem onClick={handleExportHtml} className="cursor-pointer py-2 px-2.5 rounded-lg">
+              <FileCode className="mr-2.5 size-4 text-brand shrink-0" />
               <div>
-                <p className="font-semibold text-foreground">Standalone HTML</p>
-                <p className="text-[10px] text-muted-foreground">Self-contained offline presentation</p>
+                <p className="font-semibold text-foreground">{t.editor.standaloneHtml}</p>
+                <p className="text-[10px] text-muted-foreground">{t.editor.standaloneDesc}</p>
               </div>
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={handleExportJson} className="cursor-pointer">
-              <Download className="mr-2 h-4 w-4 text-muted-foreground" />
+            <DropdownMenuItem onClick={handleExportPdf} className="cursor-pointer py-2 px-2.5 rounded-lg">
+              <FileText className="mr-2.5 size-4 text-rose-400 shrink-0" />
               <div>
-                <p className="font-semibold text-foreground">Project JSON</p>
-                <p className="text-[10px] text-muted-foreground">Raw slide document backup</p>
-              </div>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={() => fileInputRef.current?.click()}
-              className="cursor-pointer"
-            >
-              <FileUp className="mr-2 h-4 w-4 text-muted-foreground" />
-              <div>
-                <p className="font-semibold text-foreground">Import JSON</p>
-                <p className="text-[10px] text-muted-foreground">Restore from presentation JSON</p>
+                <p className="font-semibold text-foreground">{t.editor.exportPdf}</p>
+                <p className="text-[10px] text-muted-foreground">{t.editor.exportPdfDesc}</p>
               </div>
             </DropdownMenuItem>
           </DropdownMenuContent>

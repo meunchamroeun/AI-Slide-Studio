@@ -42,6 +42,43 @@ class ApiClient {
     }
   }
 
+  // Generic HTTP methods
+  async get<T>(endpoint: string): Promise<T> {
+    return this.request<T>(endpoint, { method: 'GET' });
+  }
+
+  async post<T>(endpoint: string, data?: any): Promise<T> {
+    return this.request<T>(endpoint, {
+      method: 'POST',
+      body: data !== undefined ? JSON.stringify(data) : undefined,
+    });
+  }
+
+  async delete<T>(endpoint: string): Promise<T> {
+    return this.request<T>(endpoint, { method: 'DELETE' });
+  }
+
+  // Admin APIs
+  async getAdminOverview(): Promise<any> {
+    return this.get('/admin/overview');
+  }
+
+  async updateServerConfig(payload: { apiKey?: string; modelName?: string }): Promise<any> {
+    return this.post('/admin/server-config', payload);
+  }
+
+  async testConnection(payload?: { apiKey?: string }): Promise<any> {
+    return this.post('/admin/test-connection', payload);
+  }
+
+  async getAdminPresentations(): Promise<any> {
+    return this.get('/admin/presentations');
+  }
+
+  async deleteAdminPresentation(id: string): Promise<any> {
+    return this.delete(`/admin/presentations/${id}`);
+  }
+
   // Health
   async getHealth(): Promise<{ status: string; database: string; aiModel: string; liveGeminiConfigured: boolean }> {
     return this.request('/health');
@@ -113,13 +150,26 @@ class ApiClient {
     const url = `${API_BASE_URL}/presentations/${id}/export/html`;
     const response = await fetch(url);
     if (!response.ok) {
-      throw new Error(`Export failed with status ${response.status}`);
+      throw new Error(`HTML export failed with status ${response.status}`);
     }
     return response.text();
   }
 
+  async exportPdf(id: string): Promise<Blob> {
+    const url = `${API_BASE_URL}/presentations/${id}/export/pdf`;
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`PDF export failed with status ${response.status}`);
+    }
+    return response.blob();
+  }
+
   getExportHtmlUrl(id: string): string {
     return `${API_BASE_URL}/presentations/${id}/export/html`;
+  }
+
+  getExportPdfUrl(id: string): string {
+    return `${API_BASE_URL}/presentations/${id}/export/pdf`;
   }
 
   getExportJsonUrl(id: string): string {

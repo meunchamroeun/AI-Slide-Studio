@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   ChevronLeft,
   ChevronRight,
@@ -38,12 +38,18 @@ export function SlideCanvas({
   onSelectAspectRatio,
 }: SlideCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [localReplay, setLocalReplay] = useState(0);
 
   const is169 = aspectRatio === '16:9';
   const targetWidth = is169 ? 1920 : 1440;
   const targetHeight = 1080;
 
   const { scale } = useFitScale(containerRef, aspectRatio);
+
+  const handleReplay = () => {
+    setLocalReplay((c) => c + 1);
+    onReplayAnimation();
+  };
 
   return (
     <div className="flex-1 flex flex-col bg-background/95 overflow-hidden h-full">
@@ -55,6 +61,10 @@ export function SlideCanvas({
           </span>
           <span className="text-border">&bull;</span>
           <span className="font-mono uppercase text-[10px]">{slide.layout}</span>
+          <span className="text-border">&bull;</span>
+          <span className="font-mono text-[10px] text-primary capitalize">
+            {slide.animation?.preset || 'fade-in'}
+          </span>
         </div>
 
         <div className="flex items-center gap-2">
@@ -89,12 +99,12 @@ export function SlideCanvas({
           <Button
             size="sm"
             variant="ghost"
-            onClick={onReplayAnimation}
-            className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground gap-1"
-            title="Replay animations"
+            onClick={handleReplay}
+            className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground gap-1 transition-all active:scale-95"
+            title="Replay GSAP and CSS animations"
           >
-            <RotateCcw className="h-3 w-3" />
-            <span className="hidden sm:inline">Animate</span>
+            <RotateCcw className="h-3 w-3 text-primary animate-pulse" />
+            <span className="hidden sm:inline font-medium text-foreground">Animate</span>
           </Button>
 
           <Button
@@ -123,9 +133,15 @@ export function SlideCanvas({
             transformOrigin: 'center center',
             transition: 'transform 0.15s ease-out',
           }}
-          className="shadow-2xl shadow-black/80 rounded-xl overflow-hidden shrink-0 border border-border/60"
+          className="shadow-2xl shadow-black/80 rounded-2xl overflow-hidden shrink-0 border border-border/60 bg-black/40"
         >
-          <SlideRenderer slide={slide} themeName={theme} isInteractive={false} />
+          <SlideRenderer
+            key={`${slide.id}-${localReplay}`}
+            slide={slide}
+            themeName={theme}
+            isInteractive={false}
+            replayTrigger={localReplay}
+          />
         </div>
       </div>
 

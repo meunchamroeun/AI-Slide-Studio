@@ -6,6 +6,7 @@ import { GeminiModule } from './gemini/gemini.module';
 import { PresentationsModule } from './presentations/presentations.module';
 import { GenerationModule } from './generation/generation.module';
 import { ExportModule } from './export/export.module';
+import { AdminModule } from './admin/admin.module';
 import { HealthController } from './health/health.controller';
 
 @Module({
@@ -19,6 +20,7 @@ import { HealthController } from './health/health.controller';
     PresentationsModule,
     GenerationModule,
     ExportModule,
+    AdminModule,
   ],
   controllers: [HealthController],
 })

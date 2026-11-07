@@ -11,57 +11,67 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        background: '#0B0A1A',
-        foreground: '#F8FAFC',
+        background: 'var(--background)',
+        foreground: 'var(--foreground)',
         card: {
-          DEFAULT: '#14122E',
-          foreground: '#FFFFFF',
+          DEFAULT: 'var(--card)',
+          foreground: 'var(--card-foreground)',
         },
         popover: {
-          DEFAULT: '#14122E',
-          foreground: '#FFFFFF',
+          DEFAULT: 'var(--popover)',
+          foreground: 'var(--popover-foreground)',
         },
         primary: {
-          DEFAULT: '#7C5CFC',
-          foreground: '#FFFFFF',
+          DEFAULT: 'var(--primary)',
+          foreground: 'var(--primary-foreground)',
         },
         secondary: {
-          DEFAULT: '#1E1B3A',
-          foreground: '#D1CEE8',
+          DEFAULT: 'var(--secondary)',
+          foreground: 'var(--secondary-foreground)',
         },
         muted: {
-          DEFAULT: '#1A1835',
-          foreground: '#8D88B8',
+          DEFAULT: 'var(--muted)',
+          foreground: 'var(--muted-foreground)',
         },
         accent: {
-          DEFAULT: '#2DD4E6',
-          foreground: '#0B0A1A',
+          DEFAULT: 'var(--accent)',
+          foreground: 'var(--accent-foreground)',
         },
         destructive: {
-          DEFAULT: '#EF4444',
-          foreground: '#FFFFFF',
+          DEFAULT: 'var(--destructive)',
+          foreground: 'var(--destructive-foreground)',
         },
-        border: '#4A3E99',
-        input: '#14122E',
-        ring: '#7C5CFC',
+        border: 'var(--border)',
+        input: 'var(--input)',
+        ring: 'var(--ring)',
+        brand: 'var(--brand)',
+        sidebar: 'var(--sidebar)',
       },
       borderRadius: {
-        lg: '16px',
-        md: '12px',
-        sm: '8px',
+        '3xl': '1.625rem',
+        '2xl': '1.25rem',
+        xl: '1rem',
+        lg: '0.85rem',
+        md: '0.625rem',
+        sm: '0.375rem',
       },
       fontFamily: {
-        sans: ['Inter', 'sans-serif'],
+        sans: ['var(--font-roboto)', 'var(--font-khmer)', 'Roboto', 'Kantumruy Pro', 'sans-serif'],
+        serif: ['var(--font-roboto)', 'var(--font-khmer)', 'Roboto', 'Kantumruy Pro', 'sans-serif'],
+        khmer: ['var(--font-khmer)', 'Kantumruy Pro', 'sans-serif'],
         mono: ['JetBrains Mono', 'monospace'],
       },
       animation: {
         'pulse-subtle': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-        'glow': 'glow 3s ease-in-out infinite alternate',
+        glow: 'glow 3s ease-in-out infinite alternate',
       },
       keyframes: {
         glow: {
-          '0%': { boxShadow: '0 0 15px rgba(124, 92, 252, 0.2)' },
-          '100%': { boxShadow: '0 0 30px rgba(124, 92, 252, 0.5), 0 0 10px rgba(45, 212, 230, 0.3)' },
+          '0%': { boxShadow: '0 0 15px rgba(56, 189, 248, 0.2)' },
+          '100%': {
+            boxShadow:
+              '0 0 30px rgba(56, 189, 248, 0.4), 0 0 10px rgba(56, 189, 248, 0.2)',
+          },
         },
       },
     },
