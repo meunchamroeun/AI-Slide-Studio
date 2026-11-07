@@ -2,6 +2,7 @@
   "name": "ai-slide-animation-studio",
   "version": "1.0.0",
   "private": true,
+  "packageManager": "pnpm@9.15.4",
   "description": "AI Slide Animation Studio - Automated animated presentation generator",
   "author": "Google DeepMind pair programming",
   "license": "MIT",
