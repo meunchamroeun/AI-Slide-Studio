@@ -77,13 +77,21 @@ export class GeminiService {
     }
     try {
       const client = new GoogleGenAI({ apiKey: key });
-      const res = await client.models.generateContent({
-        model: this.modelName,
-        contents: 'Test connection: reply with OK.',
-      });
+      let res;
+      try {
+        res = await client.models.generateContent({
+          model: this.modelName,
+          contents: 'Test connection: reply with OK.',
+        });
+      } catch {
+        res = await client.models.generateContent({
+          model: 'gemini-3.5-flash-lite',
+          contents: 'Test connection: reply with OK.',
+        });
+      }
       return {
         success: true,
-        message: `Successfully connected to Google Gemini API (${this.modelName}). Response: ${res.text?.slice(0, 40) || 'OK'}`,
+        message: `Successfully connected to Google Gemini API. Response: ${res.text?.slice(0, 40) || 'OK'}`,
         model: this.modelName,
       };
     } catch (err: any) {
@@ -156,7 +164,7 @@ STRICT REQUIREMENT: Output MUST be valid JSON only, without any markdown backtic
         return SlideSchema.parse({
           ...existingSlide,
           layout,
-          content: parsed.content || parsed,
+          content: this.sanitizeSlideContent(parsed.content || parsed),
         });
       } catch (err) {
         this.logger.warn(`Live slide regeneration failed, using deterministic slide engine: ${err}`);
@@ -215,30 +223,47 @@ Requirements: Keep it concise, impactful, professional. NO EMOJIS! Output only t
     for (let attempt = 1; attempt <= 3; attempt++) {
       try {
         this.logger.log(`Calling Gemini API (attempt ${attempt}/3)...`);
-        const response = await client.models.generateContent({
-          model: this.modelName,
-          contents: prompt,
-          config: {
-            responseMimeType: 'application/json',
-            temperature: 0.7,
-          },
-        });
+        let response;
+        try {
+          response = await client.models.generateContent({
+            model: this.modelName,
+            contents: prompt,
+            config: {
+              responseMimeType: 'application/json',
+              temperature: 0.7,
+            },
+          });
+        } catch (mErr: any) {
+          this.logger.warn(`Primary model ${this.modelName} error (${mErr.message}), falling back to gemini-3.5-flash-lite...`);
+          response = await client.models.generateContent({
+            model: 'gemini-3.5-flash-lite',
+            contents: prompt,
+            config: {
+              responseMimeType: 'application/json',
+              temperature: 0.7,
+            },
+          });
+        }
 
         const rawText = response.text || '';
         const cleaned = this.cleanJsonString(rawText);
         const parsed = JSON.parse(cleaned);
+
+        const validThemes = ['modern-dark', 'minimal-light', 'corporate-blue', 'editorial', 'technology-gradient', 'elegant-monochrome'];
+        const safeTheme = validThemes.includes(dto.theme) ? dto.theme : 'modern-dark';
 
         // Validate and normalize
         return PresentationDocumentSchema.parse({
           id: `pres-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
           title: parsed.title || dto.prompt.slice(0, 50),
           description: parsed.description || `Generated presentation on ${dto.prompt}`,
-          theme: dto.theme,
-          aspectRatio: dto.aspectRatio,
+          theme: safeTheme,
+          aspectRatio: dto.aspectRatio || '16:9',
           slides: parsed.slides.map((s: any, idx: number) => ({
             ...s,
             id: s.id || `slide-${idx + 1}`,
             slideNumber: idx + 1,
+            content: this.sanitizeSlideContent(s.content),
             animation: s.animation || {
               preset: this.selectAnimationForLayout(s.layout),
               duration: 0.8,
@@ -258,8 +283,8 @@ Requirements: Keep it concise, impactful, professional. NO EMOJIS! Output only t
             audience: dto.audience,
             tone: dto.tone,
             style: dto.style,
-            theme: dto.theme,
-            aspectRatio: dto.aspectRatio,
+            theme: safeTheme,
+            aspectRatio: dto.aspectRatio || '16:9',
             animationStyle: dto.animationStyle,
             visualAssetPreference: dto.visualAssetPreference,
             generatedAt: new Date().toISOString(),
@@ -335,6 +360,101 @@ STRICT DESIGN RULES:
       clean = clean.replace(/^```\s*/, '').replace(/\s*```$/, '');
     }
     return clean.trim();
+  }
+
+  /**
+   * Sanitizes and normalizes slide content from LLM output to guarantee schema compliance
+   */
+  private sanitizeSlideContent(content: any): any {
+    if (!content || typeof content !== 'object') {
+      return { title: 'Untitled Slide' };
+    }
+
+    const c = { ...content };
+
+    // Ensure title is a non-empty string
+    if (!c.title || typeof c.title !== 'string') {
+      c.title = typeof c.title === 'number' ? String(c.title) : 'Overview';
+    }
+
+    // Normalize takeaways to string array
+    if (Array.isArray(c.takeaways)) {
+      c.takeaways = c.takeaways
+        .map((item: any) => {
+          if (typeof item === 'string') return item.slice(0, 300);
+          if (item && typeof item === 'object') {
+            return (item.point || item.title || item.text || item.takeaway || item.description || JSON.stringify(item)).slice(0, 300);
+          }
+          return String(item || '').slice(0, 300);
+        })
+        .filter((t: string) => t.length > 0);
+    }
+
+    // Normalize bulletPoints to string array
+    if (Array.isArray(c.bulletPoints)) {
+      c.bulletPoints = c.bulletPoints
+        .map((item: any) => {
+          if (typeof item === 'string') return item.slice(0, 500);
+          if (item && typeof item === 'object') {
+            return (item.point || item.title || item.text || item.bullet || item.description || JSON.stringify(item)).slice(0, 500);
+          }
+          return String(item || '').slice(0, 500);
+        })
+        .filter((b: string) => b.length > 0);
+    }
+
+    // Normalize comparison points
+    if (c.comparison && typeof c.comparison === 'object') {
+      if (c.comparison.left && Array.isArray(c.comparison.left.points)) {
+        c.comparison.left.points = c.comparison.left.points.map((p: any) =>
+          typeof p === 'string' ? p : p.point || p.title || p.text || String(p)
+        );
+      }
+      if (c.comparison.right && Array.isArray(c.comparison.right.points)) {
+        c.comparison.right.points = c.comparison.right.points.map((p: any) =>
+          typeof p === 'string' ? p : p.point || p.title || p.text || String(p)
+        );
+      }
+    }
+
+    // Normalize statistics
+    if (Array.isArray(c.statistics)) {
+      c.statistics = c.statistics.map((s: any, i: number) => ({
+        id: s.id || `stat-${i + 1}`,
+        value: String(s.value ?? s.number ?? '0'),
+        numericValue: typeof s.numericValue === 'number' ? s.numericValue : undefined,
+        suffix: s.suffix ? String(s.suffix) : undefined,
+        label: String(s.label || s.title || s.name || 'Metric'),
+        subtext: s.subtext ? String(s.subtext) : undefined,
+        trend: ['up', 'down', 'neutral'].includes(s.trend) ? s.trend : undefined,
+        icon: s.icon ? String(s.icon) : 'activity',
+      }));
+    }
+
+    // Normalize features
+    if (Array.isArray(c.features)) {
+      c.features = c.features.map((f: any, i: number) => ({
+        id: f.id || `feat-${i + 1}`,
+        title: String(f.title || f.name || `Feature ${i + 1}`),
+        description: String(f.description || f.details || f.text || ''),
+        icon: f.icon ? String(f.icon) : 'zap',
+        badge: f.badge ? String(f.badge) : undefined,
+      }));
+    }
+
+    // Normalize timeline
+    if (Array.isArray(c.timeline)) {
+      c.timeline = c.timeline.map((t: any, i: number) => ({
+        id: t.id || `time-${i + 1}`,
+        phase: String(t.phase || `Phase ${i + 1}`),
+        title: String(t.title || `Milestone ${i + 1}`),
+        description: String(t.description || t.details || ''),
+        dateRange: t.dateRange ? String(t.dateRange) : undefined,
+        status: ['completed', 'in-progress', 'upcoming'].includes(t.status) ? t.status : undefined,
+      }));
+    }
+
+    return c;
   }
 
   private selectAnimationForLayout(layout?: SlideLayout): string {

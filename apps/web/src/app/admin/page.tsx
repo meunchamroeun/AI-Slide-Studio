@@ -67,7 +67,7 @@ export default function AdminPage() {
 
   // Form states
   const [serverApiKey, setServerApiKey] = useState('');
-  const [serverModel, setServerModel] = useState('gemini-2.5-flash');
+  const [serverModel, setServerModel] = useState('gemini-3.5-flash');
   const [showKey, setShowKey] = useState(false);
   const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
 
@@ -291,7 +291,7 @@ export default function AdminPage() {
               )}
             </div>
             <div className="text-[10px] text-muted-foreground font-mono truncate">
-              {overview?.serverConfig?.model || 'gemini-2.5-flash'}
+              {overview?.serverConfig?.model || 'gemini-3.5-flash'}
             </div>
           </div>
 
@@ -380,10 +380,9 @@ export default function AdminPage() {
                   onChange={(e) => setServerModel(e.target.value)}
                   className="w-full h-11 rounded-xl bg-background/60 border border-border/80 px-3 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-brand cursor-pointer"
                 >
-                  <option value="gemini-2.5-flash">gemini-2.5-flash (Recommended for Structured JSON & Speed)</option>
-                  <option value="gemini-2.0-flash">gemini-2.0-flash (Low Latency Free Tier)</option>
-                  <option value="gemini-1.5-flash">gemini-1.5-flash (High Throughput Free Tier)</option>
-                  <option value="gemini-1.5-pro">gemini-1.5-pro (Complex Reasoning & Large Outlines)</option>
+                  <option value="gemini-3.5-flash">gemini-3.5-flash (Recommended · Next-Gen Multimodal Free Tier)</option>
+                  <option value="gemini-3.5-flash-lite">gemini-3.5-flash-lite (Ultra Fast Latency Free Tier)</option>
+                  <option value="gemini-3.8-flash">gemini-3.8-flash (High Intelligence Free Tier)</option>
                 </select>
               </div>
 
