@@ -22,6 +22,10 @@ import {
   Palette,
   Wand2,
   Loader2,
+  Clock,
+  GitCompare,
+  CheckSquare,
+  ListOrdered,
 } from 'lucide-react';
 import {
   Slide,
@@ -289,11 +293,11 @@ export function PropertyPanel({
   };
 
   return (
-    <aside className="w-80 sm:w-96 border-l border-border/60 bg-card/60 flex flex-col shrink-0 h-full overflow-hidden shadow-xl z-20">
+    <aside className="w-80 sm:w-96 border-l border-border bg-card flex flex-col shrink-0 h-full overflow-hidden shadow-xl z-20">
       <Tabs defaultValue="content" className="flex flex-col h-full">
         {/* Tab Headers */}
-        <div className="p-3 border-b border-border/50 bg-card/80 backdrop-blur-md">
-          <TabsList className="grid grid-cols-3 w-full h-8 bg-stone-900 border border-border/60">
+        <div className="p-3 border-b border-border/50 bg-card backdrop-blur-md">
+          <TabsList className="grid grid-cols-3 w-full h-8 bg-secondary/80 dark:bg-stone-900 border border-border/60">
             <TabsTrigger value="content" className="text-xs">
               {t.editor.content}
             </TabsTrigger>
@@ -314,7 +318,7 @@ export function PropertyPanel({
               AI Copilot Prompt to Edit / Update
           ========================================================================= */}
           {presentationId && onReplaceSlide && (
-            <div className="rounded-xl border border-brand/50 bg-stone-900/90 p-3.5 space-y-3 shadow-lg relative overflow-hidden">
+            <div className="rounded-xl border border-brand/40 bg-brand/5 dark:bg-stone-900/90 p-3.5 space-y-3 shadow-sm relative overflow-hidden">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1.5 text-xs font-semibold text-brand">
                   <Sparkles className="size-4 animate-pulse" />
@@ -337,7 +341,7 @@ export function PropertyPanel({
                   'e.g. Add 4 security feature cards, make bullet points punchier, or translate into Khmer...'
                 }
                 rows={2}
-                className="text-xs resize-none bg-stone-950/90 border-border/80 text-stone-100 placeholder:text-stone-400 focus-visible:ring-1 focus-visible:ring-brand"
+                className="text-xs resize-none bg-background dark:bg-stone-950/90 border-border/80 text-foreground dark:text-stone-100 placeholder:text-muted-foreground dark:placeholder:text-stone-400 focus-visible:ring-1 focus-visible:ring-brand"
               />
 
               {/* Quick Prompt Suggestion Chips */}
@@ -362,7 +366,7 @@ export function PropertyPanel({
                         setAiPrompt(chip.text);
                         if (chip.layout) setSelectedTargetLayout(chip.layout as SlideLayout);
                       }}
-                      className="text-[10px] px-2 py-0.5 rounded-full bg-stone-800/80 hover:bg-brand/20 hover:text-brand border border-border/60 text-stone-300 transition-colors cursor-pointer"
+                      className="text-[10px] px-2 py-0.5 rounded-full bg-secondary hover:bg-brand/15 hover:text-brand border border-border/60 text-foreground dark:bg-stone-800/80 dark:text-stone-300 transition-colors cursor-pointer"
                     >
                       + {chip.text}
                     </button>
@@ -379,7 +383,7 @@ export function PropertyPanel({
                   value={selectedTargetLayout}
                   onValueChange={(val) => setSelectedTargetLayout(val)}
                 >
-                  <SelectTrigger className="h-7 text-[11px] bg-stone-950 border-border/80 flex-1">
+                  <SelectTrigger className="h-7 text-[11px] bg-background dark:bg-stone-950 border-border/80 flex-1">
                     <SelectValue placeholder="Keep Current Layout" />
                   </SelectTrigger>
                   <SelectContent className="bg-card border-border text-xs">
@@ -430,7 +434,7 @@ export function PropertyPanel({
               value={content.badge || ''}
               onChange={(e) => handleBadgeChange(e.target.value)}
               placeholder="e.g. — ARCHITECTURE or KEY LESSONS"
-              className="text-xs bg-stone-900 border-border/80 text-stone-100 placeholder:text-stone-400 focus-visible:ring-1 focus-visible:ring-brand"
+              className="text-xs focus-visible:ring-1 focus-visible:ring-brand"
             />
           </div>
 
@@ -444,7 +448,7 @@ export function PropertyPanel({
               value={content.title || ''}
               onChange={(e) => handleTitleChange(e.target.value)}
               placeholder={t.editor.titleField}
-              className="text-xs bg-stone-900 border-border/80 text-stone-100 placeholder:text-stone-400 focus-visible:ring-1 focus-visible:ring-brand font-medium"
+              className="text-xs focus-visible:ring-1 focus-visible:ring-brand font-medium"
             />
           </div>
 
@@ -456,7 +460,7 @@ export function PropertyPanel({
               onChange={(e) => handleSubtitleChange(e.target.value)}
               placeholder="Slide subtitle or lead description"
               rows={2}
-              className="text-xs resize-none bg-stone-900 border-border/80 text-stone-100 placeholder:text-stone-400 focus-visible:ring-1 focus-visible:ring-brand"
+              className="text-xs resize-none focus-visible:ring-1 focus-visible:ring-brand"
             />
           </div>
 
@@ -472,7 +476,7 @@ export function PropertyPanel({
                 onChange={(e) => handleBodyChange(e.target.value)}
                 placeholder="Detailed narrative or body context for this slide..."
                 rows={3}
-                className="text-xs resize-none bg-stone-900 border-border/80 text-stone-100 placeholder:text-stone-400 focus-visible:ring-1 focus-visible:ring-brand"
+                className="text-xs resize-none focus-visible:ring-1 focus-visible:ring-brand"
               />
             </div>
           )}
@@ -502,7 +506,7 @@ export function PropertyPanel({
                 {(content.features || []).map((feat, idx) => (
                   <div
                     key={feat.id || idx}
-                    className="p-3 rounded-xl bg-stone-900/90 border border-border/80 space-y-2.5 shadow-sm"
+                    className="p-3 rounded-xl bg-secondary/40 dark:bg-stone-900/90 border border-border/80 space-y-2.5 shadow-xs"
                   >
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-1.5">
@@ -535,7 +539,7 @@ export function PropertyPanel({
                             value={feat.icon || 'zap'}
                             onValueChange={(val) => handleUpdateFeature(idx, 'icon', val)}
                           >
-                            <SelectTrigger className="h-7 text-xs bg-stone-900 border-border/80">
+                            <SelectTrigger className="h-7 text-xs border-border/80">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -557,7 +561,7 @@ export function PropertyPanel({
                             value={feat.badge || ''}
                             onChange={(e) => handleUpdateFeature(idx, 'badge', e.target.value)}
                             placeholder="e.g. PILLAR 1"
-                            className="h-7 text-xs bg-stone-900 border-border/80 text-stone-100 placeholder:text-stone-400"
+                            className="h-7 text-xs border-border/80"
                           />
                         </div>
                       </div>
@@ -571,7 +575,7 @@ export function PropertyPanel({
                           value={feat.title}
                           onChange={(e) => handleUpdateFeature(idx, 'title', e.target.value)}
                           placeholder="Module or Feature Name"
-                          className="h-7.5 text-xs bg-stone-900 border-border/80 text-stone-100 placeholder:text-stone-400 font-semibold"
+                          className="h-7.5 text-xs border-border/80 font-semibold"
                         />
                       </div>
 
@@ -585,7 +589,7 @@ export function PropertyPanel({
                           onChange={(e) => handleUpdateFeature(idx, 'description', e.target.value)}
                           placeholder="Operational details and capabilities..."
                           rows={2}
-                          className="text-xs resize-none bg-stone-900 border-border/80 text-stone-100 placeholder:text-stone-400 leading-relaxed"
+                          className="text-xs resize-none border-border/80 leading-relaxed"
                         />
                       </div>
                     </div>
@@ -620,7 +624,7 @@ export function PropertyPanel({
                 {(content.timeline || []).map((milestone, idx) => (
                   <div
                     key={milestone.id || idx}
-                    className="p-3 rounded-xl bg-stone-900/90 border border-border/80 space-y-2 shadow-sm"
+                    className="p-3 rounded-xl bg-secondary/40 dark:bg-stone-900/90 border border-border/80 space-y-2 shadow-xs"
                   >
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-1.5">
@@ -631,7 +635,7 @@ export function PropertyPanel({
                           value={milestone.phase || ''}
                           onChange={(e) => handleUpdateTimeline(idx, 'phase', e.target.value)}
                           placeholder="PHASE 01"
-                          className="h-6 text-[11px] font-mono uppercase bg-stone-900 border-border/80 w-24"
+                          className="h-6 text-[11px] font-mono uppercase border-border/80 w-24"
                         />
                       </div>
                       <Button
@@ -648,7 +652,7 @@ export function PropertyPanel({
                       value={milestone.title}
                       onChange={(e) => handleUpdateTimeline(idx, 'title', e.target.value)}
                       placeholder="Milestone Title"
-                      className="h-7 text-xs font-semibold bg-stone-900 border-border/80"
+                      className="h-7 text-xs font-semibold border-border/80"
                     />
 
                     <Textarea
@@ -656,7 +660,7 @@ export function PropertyPanel({
                       onChange={(e) => handleUpdateTimeline(idx, 'description', e.target.value)}
                       placeholder="Scope, key deliverables, and deliverables..."
                       rows={2}
-                      className="text-xs resize-none bg-stone-900 border-border/80"
+                      className="text-xs resize-none border-border/80"
                     />
 
                     <div className="flex items-center gap-2">
@@ -664,13 +668,13 @@ export function PropertyPanel({
                         value={milestone.dateRange || ''}
                         onChange={(e) => handleUpdateTimeline(idx, 'dateRange', e.target.value)}
                         placeholder="e.g. Month 1 - 2"
-                        className="h-7 text-xs bg-stone-900 border-border/80 flex-1 font-mono"
+                        className="h-7 text-xs border-border/80 flex-1 font-mono"
                       />
                       <Select
                         value={milestone.status || 'in-progress'}
                         onValueChange={(val) => handleUpdateTimeline(idx, 'status', val)}
                       >
-                        <SelectTrigger className="h-7 text-xs bg-stone-900 border-border/80 w-28">
+                        <SelectTrigger className="h-7 text-xs border-border/80 w-28">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -697,7 +701,7 @@ export function PropertyPanel({
               </label>
 
               {/* Left Column */}
-              <div className="p-3 rounded-xl bg-stone-900/90 border border-border/80 space-y-2">
+              <div className="p-3 rounded-xl bg-secondary/40 dark:bg-stone-900/90 border border-border/80 space-y-2">
                 <span className="text-[11px] font-mono uppercase text-muted-foreground font-bold">
                   Column 1 (Left / Legacy)
                 </span>
@@ -705,13 +709,13 @@ export function PropertyPanel({
                   value={content.comparison?.left?.title || ''}
                   onChange={(e) => handleUpdateComparison('left', 'title', e.target.value)}
                   placeholder="e.g. Traditional Workflow"
-                  className="h-7 text-xs font-semibold bg-stone-900"
+                  className="h-7 text-xs font-semibold"
                 />
                 <Input
                   value={content.comparison?.left?.subtitle || ''}
                   onChange={(e) => handleUpdateComparison('left', 'subtitle', e.target.value)}
                   placeholder="e.g. Manual, fragmented, slow"
-                  className="h-7 text-xs bg-stone-900"
+                  className="h-7 text-xs"
                 />
                 <div className="space-y-1.5 pt-1">
                   <div className="flex items-center justify-between">
@@ -730,7 +734,7 @@ export function PropertyPanel({
                       <Input
                         value={pt}
                         onChange={(e) => handleUpdateComparisonPoint('left', pIdx, e.target.value)}
-                        className="h-6 text-xs bg-stone-900 flex-1"
+                        className="h-6 text-xs flex-1"
                       />
                       <Button
                         size="icon"
@@ -746,7 +750,7 @@ export function PropertyPanel({
               </div>
 
               {/* Right Column */}
-              <div className="p-3 rounded-xl bg-stone-900/90 border border-brand/50 space-y-2">
+              <div className="p-3 rounded-xl bg-brand/5 dark:bg-stone-900/90 border border-brand/50 space-y-2">
                 <span className="text-[11px] font-mono uppercase text-brand font-bold">
                   Column 2 (Right / Recommended)
                 </span>
@@ -754,13 +758,13 @@ export function PropertyPanel({
                   value={content.comparison?.right?.title || ''}
                   onChange={(e) => handleUpdateComparison('right', 'title', e.target.value)}
                   placeholder="e.g. AI Slide Studio"
-                  className="h-7 text-xs font-semibold bg-stone-900"
+                  className="h-7 text-xs font-semibold"
                 />
                 <Input
                   value={content.comparison?.right?.subtitle || ''}
                   onChange={(e) => handleUpdateComparison('right', 'subtitle', e.target.value)}
                   placeholder="e.g. Automated, unified, responsive"
-                  className="h-7 text-xs bg-stone-900"
+                  className="h-7 text-xs"
                 />
                 <div className="space-y-1.5 pt-1">
                   <div className="flex items-center justify-between">
@@ -779,7 +783,7 @@ export function PropertyPanel({
                       <Input
                         value={pt}
                         onChange={(e) => handleUpdateComparisonPoint('right', pIdx, e.target.value)}
-                        className="h-6 text-xs bg-stone-900 flex-1"
+                        className="h-6 text-xs flex-1"
                       />
                       <Button
                         size="icon"
@@ -812,7 +816,7 @@ export function PropertyPanel({
                   onChange={(e) => onUpdateContent({ leftColumn: e.target.value })}
                   placeholder="Heading and paragraphs for left column..."
                   rows={4}
-                  className="text-xs resize-none bg-stone-900"
+                  className="text-xs resize-none"
                 />
               </div>
               <div>
@@ -822,7 +826,7 @@ export function PropertyPanel({
                   onChange={(e) => onUpdateContent({ rightColumn: e.target.value })}
                   placeholder="Heading and paragraphs for right column..."
                   rows={4}
-                  className="text-xs resize-none bg-stone-900"
+                  className="text-xs resize-none"
                 />
               </div>
             </div>
@@ -859,7 +863,7 @@ export function PropertyPanel({
                       value={tway}
                       onChange={(e) => handleTakeawayChange(idx, e.target.value)}
                       rows={2}
-                      className="text-xs resize-none bg-stone-900 border-border/80 text-stone-100 placeholder:text-stone-400 focus-visible:ring-1 focus-visible:ring-brand flex-1 min-h-[46px]"
+                      className="text-xs resize-none focus-visible:ring-1 focus-visible:ring-brand flex-1 min-h-[46px]"
                     />
                     <Button
                       size="icon"
@@ -903,7 +907,7 @@ export function PropertyPanel({
                       value={bullet}
                       onChange={(e) => handleBulletChange(idx, e.target.value)}
                       rows={2}
-                      className="text-xs resize-none bg-stone-900 border-border/80 text-stone-100 placeholder:text-stone-400 focus-visible:ring-1 focus-visible:ring-brand flex-1 min-h-[46px]"
+                      className="text-xs resize-none focus-visible:ring-1 focus-visible:ring-brand flex-1 min-h-[46px]"
                     />
                     <Button
                       size="icon"
@@ -945,20 +949,20 @@ export function PropertyPanel({
                 {(content.statistics || []).map((stat, idx) => (
                   <div
                     key={stat.id || idx}
-                    className="p-2.5 rounded-lg bg-stone-900/90 border border-border/80 space-y-1.5"
+                    className="p-2.5 rounded-lg bg-secondary/40 dark:bg-stone-900/90 border border-border/80 space-y-1.5"
                   >
                     <div className="flex items-center gap-2">
                       <Input
                         value={stat.value}
                         onChange={(e) => handleUpdateStat(idx, 'value', e.target.value)}
                         placeholder="e.g. 98.4%"
-                        className="text-xs font-mono font-bold h-7 bg-stone-900 border-border/80 text-stone-100 placeholder:text-stone-400 focus-visible:ring-1 focus-visible:ring-brand w-24"
+                        className="text-xs font-mono font-bold h-7 focus-visible:ring-1 focus-visible:ring-brand w-24"
                       />
                       <Input
                         value={stat.label}
                         onChange={(e) => handleUpdateStat(idx, 'label', e.target.value)}
                         placeholder="e.g. Accuracy Rate"
-                        className="text-xs h-7 bg-stone-900 border-border/80 text-stone-100 placeholder:text-stone-400 focus-visible:ring-1 focus-visible:ring-brand flex-1"
+                        className="text-xs h-7 focus-visible:ring-1 focus-visible:ring-brand flex-1"
                       />
                       <Button
                         size="icon"
@@ -989,19 +993,19 @@ export function PropertyPanel({
                 onChange={(e) => onUpdateContent({ quote: e.target.value })}
                 placeholder="The quote itself..."
                 rows={3}
-                className="text-xs resize-none bg-stone-900 border-border/80 text-stone-100 placeholder:text-stone-400 focus-visible:ring-1 focus-visible:ring-brand"
+                className="text-xs resize-none focus-visible:ring-1 focus-visible:ring-brand"
               />
               <Input
                 value={content.author || ''}
                 onChange={(e) => onUpdateContent({ author: e.target.value })}
                 placeholder="Quote Author (e.g. Satya Nadella)"
-                className="text-xs bg-stone-900 border-border/80 text-stone-100 placeholder:text-stone-400 focus-visible:ring-1 focus-visible:ring-brand"
+                className="text-xs focus-visible:ring-1 focus-visible:ring-brand"
               />
               <Input
                 value={content.authorRole || ''}
                 onChange={(e) => onUpdateContent({ authorRole: e.target.value })}
                 placeholder="Author Role (e.g. Chief Executive Officer)"
-                className="text-xs bg-stone-900 border-border/80 text-stone-100 placeholder:text-stone-400 focus-visible:ring-1 focus-visible:ring-brand"
+                className="text-xs focus-visible:ring-1 focus-visible:ring-brand"
               />
             </div>
           )}
@@ -1019,16 +1023,115 @@ export function PropertyPanel({
                 value={content.ctaText || ''}
                 onChange={(e) => onUpdateContent({ ctaText: e.target.value })}
                 placeholder="e.g. Start Free Trial or Contact Sales"
-                className="text-xs bg-stone-900 border-border/80 text-stone-100 font-semibold"
+                className="text-xs font-semibold"
               />
               <Input
                 value={content.ctaUrl || ''}
                 onChange={(e) => onUpdateContent({ ctaUrl: e.target.value })}
                 placeholder="https://... or #"
-                className="text-xs bg-stone-900 border-border/80 text-stone-100 font-mono"
+                className="text-xs font-mono"
               />
             </div>
           )}
+
+          {/* Quick Add Content Modules / Sections */}
+          <div className="pt-3 border-t border-border/40 space-y-2">
+            <label className="text-[11px] font-semibold text-muted-foreground flex items-center justify-between">
+              <span>{locale === 'kh' ? 'បន្ថែមផ្នែកមាតិកាថ្មី' : 'Add Content Component'}</span>
+              <span className="text-[10px] text-brand font-medium">{locale === 'kh' ? 'ប្តូរប្លង់ស្វ័យប្រវត្តិ' : 'Auto-switches layout'}</span>
+            </label>
+            <div className="grid grid-cols-2 gap-1.5">
+              {!content.features && slide.layout !== 'feature-grid' && (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    handleAddFeature();
+                    onSetLayout('feature-grid');
+                  }}
+                  className="h-7 text-[11px] justify-start gap-1.5 border-border/70 hover:border-brand/50 text-foreground cursor-pointer"
+                >
+                  <Layers className="size-3 text-brand" />
+                  <span>{locale === 'kh' ? '+ កាតមុខងារ' : '+ Feature Cards'}</span>
+                </Button>
+              )}
+
+              {!content.timeline && slide.layout !== 'timeline' && (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    handleAddTimeline();
+                    onSetLayout('timeline');
+                  }}
+                  className="h-7 text-[11px] justify-start gap-1.5 border-border/70 hover:border-brand/50 text-foreground cursor-pointer"
+                >
+                  <Clock className="size-3 text-brand" />
+                  <span>{locale === 'kh' ? '+ ផែនទីពេលវេលា' : '+ Timeline'}</span>
+                </Button>
+              )}
+
+              {!content.comparison && slide.layout !== 'comparison' && (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    handleAddComparisonPoint('left');
+                    onSetLayout('comparison');
+                  }}
+                  className="h-7 text-[11px] justify-start gap-1.5 border-border/70 hover:border-brand/50 text-foreground cursor-pointer"
+                >
+                  <GitCompare className="size-3 text-brand" />
+                  <span>{locale === 'kh' ? '+ ប្រៀបធៀប' : '+ Comparison'}</span>
+                </Button>
+              )}
+
+              {!content.takeaways && slide.layout !== 'key-takeaways' && (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    handleAddTakeaway();
+                    onSetLayout('key-takeaways');
+                  }}
+                  className="h-7 text-[11px] justify-start gap-1.5 border-border/70 hover:border-brand/50 text-foreground cursor-pointer"
+                >
+                  <CheckSquare className="size-3 text-brand" />
+                  <span>{locale === 'kh' ? '+ ចំណុចសំខាន់' : '+ Takeaways'}</span>
+                </Button>
+              )}
+
+              {(!content.statistics || content.statistics.length === 0) && (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={handleAddStat}
+                  className="h-7 text-[11px] justify-start gap-1.5 border-border/70 hover:border-brand/50 text-foreground cursor-pointer"
+                >
+                  <TrendingUp className="size-3 text-brand" />
+                  <span>{locale === 'kh' ? '+ ទិន្នន័យស្ថិតិ' : '+ Metric Stats'}</span>
+                </Button>
+              )}
+
+              {(!content.bulletPoints || content.bulletPoints.length === 0) && (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={handleAddBullet}
+                  className="h-7 text-[11px] justify-start gap-1.5 border-border/70 hover:border-brand/50 text-foreground cursor-pointer"
+                >
+                  <ListOrdered className="size-3 text-brand" />
+                  <span>{locale === 'kh' ? '+ ចំណុចរាយ' : '+ Bullet Points'}</span>
+                </Button>
+              )}
+            </div>
+          </div>
         </TabsContent>
 
         {/* =========================================================================
@@ -1045,7 +1148,7 @@ export function PropertyPanel({
               value={slide.layout}
               onValueChange={(val) => onSetLayout(val as SlideLayout)}
             >
-              <SelectTrigger className="text-xs bg-stone-900 border-border/80">
+              <SelectTrigger className="text-xs border-border/80">
                 <SelectValue placeholder="Select layout" />
               </SelectTrigger>
               <SelectContent>
@@ -1075,7 +1178,7 @@ export function PropertyPanel({
               value={theme}
               onValueChange={(val) => onSetTheme(val as ThemeName)}
             >
-              <SelectTrigger className="text-xs bg-stone-900 border-border/80">
+              <SelectTrigger className="text-xs border-border/80">
                 <SelectValue placeholder="Select theme" />
               </SelectTrigger>
               <SelectContent>
@@ -1097,13 +1200,13 @@ export function PropertyPanel({
                 value={content.imagePrompt || ''}
                 onChange={(e) => onUpdateContent({ imagePrompt: e.target.value })}
                 placeholder="AI visual prompt or concept"
-                className="text-xs bg-stone-900 border-border/80 text-stone-100 placeholder:text-stone-400 focus-visible:ring-1 focus-visible:ring-brand"
+                className="text-xs focus-visible:ring-1 focus-visible:ring-brand"
               />
               <Input
                 value={content.imageUrl || ''}
                 onChange={(e) => onUpdateContent({ imageUrl: e.target.value })}
                 placeholder="Image URL or data URI"
-                className="text-xs bg-stone-900 border-border/80 text-stone-100 placeholder:text-stone-400 focus-visible:ring-1 focus-visible:ring-brand"
+                className="text-xs focus-visible:ring-1 focus-visible:ring-brand"
               />
             </div>
           )}
@@ -1125,7 +1228,7 @@ export function PropertyPanel({
                 onSetAnimation(val as AnimationPreset, slide.animation?.duration || 0.8)
               }
             >
-              <SelectTrigger className="text-xs bg-stone-900 border-border/80">
+              <SelectTrigger className="text-xs border-border/80">
                 <SelectValue placeholder="Select animation" />
               </SelectTrigger>
               <SelectContent>

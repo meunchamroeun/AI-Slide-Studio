@@ -88,44 +88,80 @@ body {
   overflow-x: hidden;
 }
 
-/* Ensure solid dark background and high-contrast text for all form controls */
+/* Form controls styling for Light & Dark mode */
 input, textarea, select {
   font-family: inherit;
 }
 
-.dark input, 
-.dark textarea, 
-.dark select {
+/* Dark mode inputs (when html has class dark) */
+html.dark input:not([class*="bg-transparent"]), 
+html.dark textarea:not([class*="bg-transparent"]), 
+html.dark select:not([class*="bg-transparent"]) {
   background-color: #1c1917 !important;
   color: #fcfbf9 !important;
   border-color: rgba(255, 255, 255, 0.15) !important;
 }
 
-.dark input::placeholder, 
-.dark textarea::placeholder {
+html.dark input[class*="bg-transparent"],
+html.dark textarea[class*="bg-transparent"] {
+  background-color: transparent !important;
+  color: #fcfbf9 !important;
+}
+
+html.dark input::placeholder, 
+html.dark textarea::placeholder {
   color: #a8a29e !important;
   opacity: 1 !important;
 }
 
-:not(.dark) input,
-:not(.dark) textarea,
-:not(.dark) select {
-  background-color: #ffffff;
-  color: #1c1917;
-  border-color: rgba(0, 0, 0, 0.15);
+/* Light mode inputs (when html does NOT have class dark) */
+html:not(.dark) input:not([class*="bg-transparent"]),
+html:not(.dark) textarea:not([class*="bg-transparent"]),
+html:not(.dark) select:not([class*="bg-transparent"]) {
+  background-color: #ffffff !important;
+  color: #1c1917 !important;
+  border-color: rgba(0, 0, 0, 0.15) !important;
 }
 
-:not(.dark) input::placeholder,
-:not(.dark) textarea::placeholder {
-  color: #78716c;
+html:not(.dark) input[class*="bg-transparent"],
+html:not(.dark) textarea[class*="bg-transparent"] {
+  background-color: transparent !important;
+  color: #1c1917 !important;
 }
 
-.dark input:-webkit-autofill,
-.dark textarea:-webkit-autofill,
-.dark select:-webkit-autofill {
+html:not(.dark) input::placeholder,
+html:not(.dark) textarea::placeholder {
+  color: #78716c !important;
+  opacity: 1 !important;
+}
+
+html:not(.dark) input:-webkit-autofill,
+html:not(.dark) textarea:-webkit-autofill,
+html:not(.dark) select:-webkit-autofill {
+  -webkit-text-fill-color: #1c1917 !important;
+  -webkit-box-shadow: 0 0 0px 1000px #ffffff inset !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+html.dark input:-webkit-autofill,
+html.dark textarea:-webkit-autofill,
+html.dark select:-webkit-autofill {
   -webkit-text-fill-color: #fcfbf9 !important;
   -webkit-box-shadow: 0 0 0px 1000px #1c1917 inset !important;
   transition: background-color 5000s ease-in-out 0s;
+}
+
+/* Bulletproof Tabs Styling for Light & Dark mode */
+.tab-trigger[data-state="active"] {
+  background-color: #ffffff !important;
+  color: #1c1917 !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1) !important;
+}
+
+html.dark .tab-trigger[data-state="active"] {
+  background-color: #292524 !important;
+  color: #fcfbf9 !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.4) !important;
 }
 
 /* Custom modern scrollbars */

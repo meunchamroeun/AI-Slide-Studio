@@ -339,9 +339,22 @@ export function useEditorStore(initialDocument: PresentationDocument) {
   }, []);
 
   const replaceSlide = useCallback(
-    (slideId: string, newSlide: Slide) => {
-      const updatedSlides = document.slides.map((s) => {
-        if (s.id === slideId) {
+    (slideOrId: string | Slide, maybeSlide?: Slide) => {
+      let targetId: string = '';
+      let newSlide: Slide;
+
+      if (typeof slideOrId === 'string' && maybeSlide) {
+        targetId = slideOrId;
+        newSlide = maybeSlide;
+      } else if (typeof slideOrId === 'object' && slideOrId) {
+        newSlide = slideOrId;
+        targetId = newSlide.id || (activeSlide ? activeSlide.id : '');
+      } else {
+        return;
+      }
+
+      const updatedSlides = document.slides.map((s, idx) => {
+        if (s.id === targetId || (!targetId && idx === activeSlideIndex) || (activeSlide && s.id === activeSlide.id)) {
           return {
             ...newSlide,
             id: s.id,
@@ -359,7 +372,7 @@ export function useEditorStore(initialDocument: PresentationDocument) {
 
       pushState(updatedDoc);
     },
-    [document, pushState],
+    [activeSlide, activeSlideIndex, document, pushState],
   );
 
   return {

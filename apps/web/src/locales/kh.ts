@@ -201,7 +201,7 @@ export const kh: Translations = {
     saved: 'បានរក្សាទុក',
     saving: 'កំពុងរក្សាទុក...',
     unsaved: 'មិនទាន់រក្សាទុក',
-    saveError: 'កំហុសរក្សាទុក',
+    saveError: 'កំហុសក្នុងការរក្សាទុក',
     undo: 'មិនធ្វើវិញ (Ctrl+Z)',
     redo: 'ធ្វើវិញ (Ctrl+Y)',
     replay: 'ចាក់ឡើងវិញ',

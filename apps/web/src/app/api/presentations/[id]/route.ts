@@ -36,7 +36,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     const aspectRatio = updateData.aspectRatio || '16:9';
     const slideCount = Array.isArray(updateData.slides) ? updateData.slides.length : 0;
 
-    await sql`
+    const updated = await sql`
       UPDATE presentations
       SET
         title = ${title},
@@ -44,10 +44,36 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
         theme = ${theme},
         "aspectRatio" = ${aspectRatio},
         "slideCount" = ${slideCount},
-        document = ${JSON.stringify(updateData)},
+        document = ${JSON.stringify(updateData)}::jsonb,
         "updatedAt" = NOW()
-      WHERE id = ${id};
+      WHERE id = ${id}
+      RETURNING id;
     `;
+
+    if (updated.length === 0) {
+      await sql`
+        INSERT INTO presentations (id, title, description, theme, "aspectRatio", "slideCount", document, "createdAt", "updatedAt")
+        VALUES (
+          ${id},
+          ${title},
+          ${description},
+          ${theme},
+          ${aspectRatio},
+          ${slideCount},
+          ${JSON.stringify(updateData)}::jsonb,
+          NOW(),
+          NOW()
+        )
+        ON CONFLICT (id) DO UPDATE SET
+          title = EXCLUDED.title,
+          description = EXCLUDED.description,
+          theme = EXCLUDED.theme,
+          "aspectRatio" = EXCLUDED."aspectRatio",
+          "slideCount" = EXCLUDED."slideCount",
+          document = EXCLUDED.document,
+          "updatedAt" = NOW();
+      `;
+    }
 
     return NextResponse.json(updateData);
   } catch (err: any) {

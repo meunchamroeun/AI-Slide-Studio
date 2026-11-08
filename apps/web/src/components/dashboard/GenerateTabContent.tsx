@@ -423,13 +423,13 @@ export function GenerateTabContent({
         {/* Mode 1: Topic / Prompt Composer */}
         {activeInputMode === 'topic' && (
           <div className="space-y-4">
-            <div className="relative rounded-2xl border border-border/80 bg-stone-900/90 p-3 sm:p-4 shadow-inner focus-within:border-brand/70 focus-within:ring-2 focus-within:ring-brand/20 transition-all backdrop-blur-sm">
+            <div className="relative rounded-2xl border border-border/80 bg-card dark:bg-stone-900/90 p-3 sm:p-4 shadow-inner focus-within:border-brand/70 focus-within:ring-2 focus-within:ring-brand/20 transition-all backdrop-blur-sm">
               <Textarea
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
                 placeholder={t.hero.placeholder}
                 rows={4}
-                className="w-full resize-none border-0 bg-transparent text-xs sm:text-sm text-stone-100 placeholder:text-stone-400 focus-visible:ring-0 shadow-none p-0 leading-relaxed"
+                className="w-full resize-none border-0 bg-transparent text-xs sm:text-sm text-foreground dark:text-stone-100 placeholder:text-muted-foreground dark:placeholder:text-stone-400 focus-visible:ring-0 shadow-none p-0 leading-relaxed"
               />
 
               {/* Bottom bar inside composer */}
@@ -612,7 +612,7 @@ export function GenerateTabContent({
 
                 {/* Collapsible preview */}
                 {showFilePreview && (
-                  <div className="rounded-xl bg-stone-900/90 border border-border/80 p-3 text-xs text-stone-300 font-mono max-h-40 overflow-y-auto leading-relaxed">
+                  <div className="rounded-xl bg-secondary/50 dark:bg-stone-900/90 border border-border/80 p-3 text-xs text-foreground dark:text-stone-300 font-mono max-h-40 overflow-y-auto leading-relaxed">
                     {attachedFile.preview}
                   </div>
                 )}
@@ -633,7 +633,7 @@ export function GenerateTabContent({
                       'e.g. Focus on executive summary, key growth drivers, and market opportunities from this file...'
                     }
                     rows={3}
-                    className="w-full resize-none rounded-xl border border-stone-700/80 bg-stone-900 text-xs sm:text-sm text-stone-100 placeholder:text-stone-400 focus-visible:ring-1 focus-visible:ring-brand p-3"
+                    className="w-full resize-none rounded-xl border border-border bg-card text-foreground placeholder:text-muted-foreground dark:border-stone-700/80 dark:bg-stone-900 dark:text-stone-100 dark:placeholder:text-stone-400 focus-visible:ring-1 focus-visible:ring-brand p-3"
                   />
                 </div>
 
