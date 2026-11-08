@@ -148,6 +148,7 @@ function EditorMain({ initialDoc }: { initialDoc: PresentationDocument }) {
             onReplayAnimation={handleReplayAnimation}
             onPresent={handlePresent}
             onSelectAspectRatio={editor.setAspectRatio}
+            onUpdateContent={editor.updateSlideContent}
           />
         )}
 

@@ -217,6 +217,7 @@ export const en = {
     bulletPoints: 'Bullet Points',
     speakerNotes: 'Speaker Notes',
     backToPres: 'Back to Presentations',
+    clickToEdit: 'Click any text on slide to edit',
     customize: 'Customize',
     badgeField: 'Eyebrow / Category Badge',
     bodyField: 'Body Text',

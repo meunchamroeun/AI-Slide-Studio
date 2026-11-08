@@ -6,11 +6,13 @@ import {
   ChevronRight,
   Maximize2,
   RotateCcw,
+  Edit3,
 } from 'lucide-react';
 import { Slide, ThemeName, AspectRatio } from '@ai-slide-studio/shared';
 import { Button } from '@/components/ui/button';
 import { SlideRenderer } from '@/components/slides/SlideRenderer';
 import { useFitScale } from '@/hooks/useFitScale';
+import { useI18n } from '@/components/i18n-provider';
 
 interface SlideCanvasProps {
   slide: Slide;
@@ -23,6 +25,7 @@ interface SlideCanvasProps {
   onReplayAnimation: () => void;
   onPresent: () => void;
   onSelectAspectRatio?: (ratio: AspectRatio) => void;
+  onUpdateContent?: (contentUpdates: Partial<Slide['content']>) => void;
 }
 
 export function SlideCanvas({
@@ -36,7 +39,9 @@ export function SlideCanvas({
   onReplayAnimation,
   onPresent,
   onSelectAspectRatio,
+  onUpdateContent,
 }: SlideCanvasProps) {
+  const { t } = useI18n();
   const containerRef = useRef<HTMLDivElement>(null);
   const [localReplay, setLocalReplay] = useState(0);
 
@@ -68,6 +73,13 @@ export function SlideCanvas({
         </div>
 
         <div className="flex items-center gap-2">
+          {onUpdateContent && (
+            <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-brand/10 border border-brand/25 text-[10px] text-brand font-medium">
+              <Edit3 className="size-3 text-brand" />
+              <span>{t.editor.clickToEdit || 'Click any text on slide to edit'}</span>
+            </div>
+          )}
+
           {/* Aspect Ratio Toggle */}
           {onSelectAspectRatio && (
             <div className="flex items-center rounded-md bg-secondary/50 p-0.5 border border-border/50 text-[10px]">
@@ -140,6 +152,8 @@ export function SlideCanvas({
             slide={slide}
             themeName={theme}
             isInteractive={false}
+            isEditable={Boolean(onUpdateContent)}
+            onUpdateContent={onUpdateContent}
             replayTrigger={localReplay}
           />
         </div>

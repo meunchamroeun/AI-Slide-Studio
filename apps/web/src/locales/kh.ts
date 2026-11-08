@@ -219,6 +219,7 @@ export const kh: Translations = {
     bulletPoints: 'ចំណុចសំខាន់ៗ',
     speakerNotes: 'កំណត់ចំណាំអ្នកធ្វើបទបង្ហាញ',
     backToPres: 'ត្រឡប់ទៅកាន់បទបង្ហាញ',
+    clickToEdit: 'ចុចលើអត្ថបទដើម្បីកែសម្រួល',
     customize: 'កែសម្រួល',
     badgeField: 'ស្លាកសញ្ញា / សម្គាល់',
     bodyField: 'អត្ថបទពិពណ៌នា',
