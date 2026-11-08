@@ -443,3 +443,35 @@ html.dark .tab-trigger[data-state="active"] {
   border-radius: 2px;
 }
 
+/* Print & PDF Export Styles */
+@media print {
+  @page {
+    size: 1920px 1080px;
+    margin: 0;
+  }
+
+  html, body {
+    background: #0B0A1A !important;
+    color: #FFFFFF !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  header, aside, nav, button, [role="dialog"], .no-print {
+    display: none !important;
+  }
+
+  .slide {
+    width: 100vw !important;
+    height: 100vh !important;
+    page-break-after: always !important;
+    break-after: page !important;
+    display: flex !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+  }
+}
+
+

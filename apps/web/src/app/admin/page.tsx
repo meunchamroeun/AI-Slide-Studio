@@ -28,6 +28,7 @@ import { Input } from '@/components/ui/input';
 import { useAuth, ADMIN_EMAIL } from '@/components/auth/auth-provider';
 import { useI18n } from '@/components/i18n-provider';
 import { toast } from 'sonner';
+import { ConfirmDialog } from '@/components/modals/ConfirmDialog';
 
 interface AdminOverviewData {
   superAdminEmail: string;
@@ -158,20 +159,31 @@ export default function AdminPage() {
     }
   };
 
-  const handleDeletePresentation = async (id: string) => {
-    if (!confirm(locale === 'kh' ? 'តើអ្នកប្រាកដជាចង់លុបបទបង្ហាញនេះមែនទេ?' : 'Are you sure you want to delete this presentation?')) {
-      return;
-    }
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDeletePresentation = (id: string) => {
+    setDeleteTargetId(id);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteTargetId) return;
     try {
-      const res = await fetch(`/api/presentations/${id}`, {
+      setIsDeleting(true);
+      const res = await fetch(`/api/presentations/${deleteTargetId}`, {
         method: 'DELETE',
       });
       if (res.ok) {
         toast.success(locale === 'kh' ? 'បានលុបបទបង្ហាញដោយជោគជ័យ' : 'Presentation deleted');
-        setPresentations((prev) => prev.filter((p) => p.id !== id));
+        setPresentations((prev) => prev.filter((p) => p.id !== deleteTargetId));
+        setDeleteTargetId(null);
+      } else {
+        toast.error('Failed to delete presentation');
       }
     } catch (err) {
       toast.error('Failed to delete presentation');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -587,6 +599,22 @@ export default function AdminPage() {
           )}
         </div>
       </div>
+
+      <ConfirmDialog
+        open={Boolean(deleteTargetId)}
+        onOpenChange={(open) => setDeleteTargetId(open ? deleteTargetId : null)}
+        title={locale === 'kh' ? 'លុបបទបង្ហាញ?' : 'Delete Presentation?'}
+        description={
+          locale === 'kh'
+            ? 'តើអ្នកប្រាកដជាចង់លុបបទបង្ហាញនេះមែនទេ? សកម្មភាពនេះមិនអាចត្រឡប់វិញបានទេ។'
+            : 'Are you sure you want to delete this presentation? This action cannot be undone.'
+        }
+        confirmLabel={locale === 'kh' ? 'បញ្ជាក់ការលុប' : 'Confirm Delete'}
+        cancelLabel={locale === 'kh' ? 'បោះបង់' : 'Cancel'}
+        variant="destructive"
+        isLoading={isDeleting}
+        onConfirm={handleConfirmDelete}
+      />
     </AppShell>
   );
 }

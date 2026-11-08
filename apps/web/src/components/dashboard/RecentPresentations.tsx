@@ -30,6 +30,9 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { api } from '@/services/api';
 import { useI18n } from '@/components/i18n-provider';
+import { ExportPresentationModal } from '@/components/modals/ExportPresentationModal';
+import { ConfirmDialog } from '@/components/modals/ConfirmDialog';
+import { toast } from 'sonner';
 
 interface RecentPresentationsProps {
   initialPresentations: PresentationDocument[];
@@ -59,64 +62,67 @@ export function RecentPresentations({
     );
   });
 
+  const [exportModalState, setExportModalState] = useState<{
+    open: boolean;
+    id: string;
+    title: string;
+    slideCount?: number;
+    theme?: string;
+  } | null>(null);
+
+  const [deleteConfirmState, setDeleteConfirmState] = useState<{
+    open: boolean;
+    id: string;
+    title: string;
+  } | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
   const handleDuplicate = async (id: string, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     try {
       const duplicated = await api.duplicatePresentation(id);
       setPresentations([duplicated, ...presentations]);
+      toast.success(t.common.duplicate ? `${t.common.duplicate} success` : 'Duplicated successfully');
     } catch (err: any) {
-      alert(`Duplicate failed: ${err.message}`);
+      toast.error(`Duplicate failed: ${err.message}`);
     }
   };
 
-  const handleDelete = async (id: string, e: React.MouseEvent) => {
+  const handleDeleteRequest = (id: string, title: string, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!window.confirm('Are you sure you want to delete this presentation?')) return;
+    setDeleteConfirmState({ open: true, id, title });
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteConfirmState) return;
     try {
-      await api.deletePresentation(id);
-      setPresentations(presentations.filter((p) => p.id !== id));
+      setIsDeleting(true);
+      await api.deletePresentation(deleteConfirmState.id);
+      setPresentations(presentations.filter((p) => p.id !== deleteConfirmState.id));
+      toast.success('Presentation deleted successfully');
+      setDeleteConfirmState(null);
     } catch (err: any) {
-      alert(`Delete failed: ${err.message}`);
+      toast.error(`Delete failed: ${err.message}`);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
-  const handleExportHtml = async (id: string, title: string, e: React.MouseEvent) => {
+  const handleOpenExportModal = (item: PresentationDocument, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    try {
-      const html = await api.exportHtml(id);
-      const blob = new Blob([html], { type: 'text/html' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${title.toLowerCase().replace(/[^a-z0-9]/g, '_')}_presentation.html`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    } catch (err: any) {
-      alert(`Export failed: ${err.message}`);
-    }
-  };
-
-  const handleExportPdf = async (id: string, title: string, e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    try {
-      const blob = await api.exportPdf(id);
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${title.toLowerCase().replace(/[^a-z0-9]/g, '_')}_presentation.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    } catch (err: any) {
-      alert(`PDF Export failed: ${err.message}`);
-    }
+    const slides = Array.isArray(item.slides)
+      ? item.slides
+      : (item as any).document?.slides || [];
+    setExportModalState({
+      open: true,
+      id: item.id,
+      title: item.title,
+      slideCount: slides.length || (item as any).slideCount,
+      theme: item.theme,
+    });
   };
 
   return (
@@ -251,11 +257,11 @@ export function RecentPresentations({
                     <Button
                       size="sm"
                       variant="ghost"
-                      onClick={(e) => handleExportHtml(item.id, item.title, e)}
+                      onClick={(e) => handleOpenExportModal(item, e)}
                       className="h-7 px-2.5 text-xs text-muted-foreground hover:text-foreground rounded-full hover:bg-accent cursor-pointer"
-                      title="Download Offline HTML"
+                      title="Export Presentation (PDF, HTML, JSON, Print)"
                     >
-                      <Download className="size-3 mr-1" />
+                      <Download className="size-3 mr-1 text-brand" />
                       {t.common.export}
                     </Button>
 
@@ -269,7 +275,7 @@ export function RecentPresentations({
                           <MoreVertical className="size-3.5" />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-44 text-xs bg-card border-border/80">
+                      <DropdownMenuContent align="end" className="w-48 text-xs bg-card border-border/80">
                         <DropdownMenuItem
                           onClick={() => router.push(`/presentations/${item.id}`)}
                           className="cursor-pointer"
@@ -292,22 +298,15 @@ export function RecentPresentations({
                           {t.common.duplicate}
                         </DropdownMenuItem>
                         <DropdownMenuItem
-                          onClick={(e) => handleExportHtml(item.id, item.title, e as any)}
+                          onClick={(e) => handleOpenExportModal(item, e as any)}
                           className="cursor-pointer"
                         >
-                          <FileCode className="mr-2 size-3.5 text-brand" />
-                          {t.presentations.downloadHtml}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={(e) => handleExportPdf(item.id, item.title, e as any)}
-                          className="cursor-pointer"
-                        >
-                          <FileText className="mr-2 size-3.5 text-rose-400" />
-                          {t.presentations.downloadPdf}
+                          <Download className="mr-2 size-3.5 text-brand" />
+                          {t.common.export || 'Export Studio'}
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
-                          onClick={(e) => handleDelete(item.id, e as any)}
+                          onClick={(e) => handleDeleteRequest(item.id, item.title, e as any)}
                           className="cursor-pointer text-destructive focus:text-destructive"
                         >
                           <Trash2 className="mr-2 size-3.5" />
@@ -321,6 +320,42 @@ export function RecentPresentations({
             );
           })}
         </div>
+      )}
+
+      {/* Modern Export Dialog */}
+      {exportModalState && (
+        <ExportPresentationModal
+          open={exportModalState.open}
+          onOpenChange={(open) =>
+            setExportModalState(open ? exportModalState : null)
+          }
+          presentationId={exportModalState.id}
+          presentationTitle={exportModalState.title}
+          slideCount={exportModalState.slideCount}
+          themeName={exportModalState.theme}
+        />
+      )}
+
+      {/* Confirmation Dialog for Deleting Presentation */}
+      {deleteConfirmState && (
+        <ConfirmDialog
+          open={deleteConfirmState.open}
+          onOpenChange={(open) =>
+            setDeleteConfirmState(open ? deleteConfirmState : null)
+          }
+          title={t.dialogs?.confirmDeleteTitle || 'Delete Presentation?'}
+          description={
+            (t.dialogs?.confirmDeleteDesc || 'Are you sure you want to delete "{title}"? This presentation will be permanently removed.').replace(
+              '{title}',
+              deleteConfirmState.title
+            )
+          }
+          confirmLabel={t.dialogs?.confirmDeleteBtn || 'Delete Presentation'}
+          cancelLabel={t.dialogs?.cancel || 'Cancel'}
+          variant="destructive"
+          isLoading={isDeleting}
+          onConfirm={handleConfirmDelete}
+        />
       )}
     </div>
   );

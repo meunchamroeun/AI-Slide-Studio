@@ -37,6 +37,9 @@ import { api } from '@/services/api';
 import { useI18n } from '@/components/i18n-provider';
 import { LanguageToggle } from '@/components/language-toggle';
 import { ThemeToggle } from '@/components/theme-toggle';
+import { ExportPresentationModal } from '@/components/modals/ExportPresentationModal';
+import { AlertDialogModal } from '@/components/modals/AlertDialogModal';
+import { toast } from 'sonner';
 
 interface EditorToolbarProps {
   document: PresentationDocument;
@@ -71,6 +74,11 @@ export function EditorToolbar({
   const { t } = useI18n();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isExporting, setIsExporting] = React.useState(false);
+  const [showExportModal, setShowExportModal] = React.useState(false);
+  const [alertModal, setAlertModal] = React.useState<{ open: boolean; title?: string; message: string }>({
+    open: false,
+    message: '',
+  });
 
   const handleExportHtml = async () => {
     try {
@@ -85,8 +93,9 @@ export function EditorToolbar({
       a.click();
       window.document.body.removeChild(a);
       URL.revokeObjectURL(url);
+      toast.success(t.exportModal?.success || 'HTML downloaded successfully');
     } catch (err: any) {
-      alert(`Export failed: ${err.message}`);
+      toast.error(`Export failed: ${err.message}`);
     } finally {
       setIsExporting(false);
     }
@@ -104,8 +113,9 @@ export function EditorToolbar({
       a.click();
       window.document.body.removeChild(a);
       URL.revokeObjectURL(url);
+      toast.success(t.exportModal?.success || 'PDF downloaded successfully');
     } catch (err: any) {
-      alert(`PDF Export failed: ${err.message}`);
+      toast.error(`PDF Export failed: ${err.message}`);
     } finally {
       setIsExporting(false);
     }
@@ -119,6 +129,7 @@ export function EditorToolbar({
     window.document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
     downloadAnchor.remove();
+    toast.success(t.exportModal?.success || 'JSON downloaded successfully');
   };
 
   const handleImportFile = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -131,11 +142,20 @@ export function EditorToolbar({
         const parsed = JSON.parse(event.target?.result as string);
         if (parsed.slides && Array.isArray(parsed.slides)) {
           onImportDocument(parsed);
+          toast.success('Presentation JSON imported successfully');
         } else {
-          alert('Invalid presentation JSON structure');
+          setAlertModal({
+            open: true,
+            title: 'Invalid Structure',
+            message: 'Uploaded JSON file must contain a valid presentation document with slides array.',
+          });
         }
       } catch (err) {
-        alert('Failed to parse JSON file');
+        setAlertModal({
+          open: true,
+          title: 'JSON Parse Error',
+          message: 'Failed to read file. Please ensure the uploaded file contains valid JSON formatting.',
+        });
       }
     };
     reader.readAsText(file);
@@ -276,39 +296,38 @@ export function EditorToolbar({
           {t.editor.present}
         </Button>
 
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              size="sm"
-              disabled={isExporting}
-              className="h-8 bg-primary hover:opacity-95 text-primary-foreground text-xs font-medium gap-1.5 shadow-md rounded-full px-4 cursor-pointer"
-            >
-              {isExporting ? (
-                <Loader2 className="size-3.5 animate-spin" />
-              ) : (
-                <Download className="size-3.5" />
-              )}
-              {t.editor.export}
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-64 text-xs bg-card border-border/80 p-1.5 shadow-xl rounded-xl">
-            <DropdownMenuItem onClick={handleExportHtml} className="cursor-pointer py-2 px-2.5 rounded-lg">
-              <FileCode className="mr-2.5 size-4 text-brand shrink-0" />
-              <div>
-                <p className="font-semibold text-foreground">{t.editor.standaloneHtml}</p>
-                <p className="text-[10px] text-muted-foreground">{t.editor.standaloneDesc}</p>
-              </div>
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={handleExportPdf} className="cursor-pointer py-2 px-2.5 rounded-lg">
-              <FileText className="mr-2.5 size-4 text-rose-400 shrink-0" />
-              <div>
-                <p className="font-semibold text-foreground">{t.editor.exportPdf}</p>
-                <p className="text-[10px] text-muted-foreground">{t.editor.exportPdfDesc}</p>
-              </div>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <Button
+          size="sm"
+          disabled={isExporting}
+          onClick={() => setShowExportModal(true)}
+          className="h-8 bg-primary hover:opacity-95 text-primary-foreground text-xs font-semibold gap-1.5 shadow-md rounded-full px-4 cursor-pointer"
+        >
+          {isExporting ? (
+            <Loader2 className="size-3.5 animate-spin" />
+          ) : (
+            <Download className="size-3.5" />
+          )}
+          {t.editor.export}
+        </Button>
       </div>
+
+      <ExportPresentationModal
+        open={showExportModal}
+        onOpenChange={setShowExportModal}
+        presentationId={document.id}
+        presentationTitle={document.title}
+        slideCount={document.slides.length}
+        themeName={document.theme}
+        documentData={document}
+      />
+
+      <AlertDialogModal
+        open={alertModal.open}
+        onOpenChange={(open) => setAlertModal((prev) => ({ ...prev, open }))}
+        title={alertModal.title}
+        message={alertModal.message}
+        type="error"
+      />
     </header>
   );
 }
