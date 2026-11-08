@@ -140,7 +140,7 @@ export function PropertyPanel({
               value={content.title || ''}
               onChange={(e) => handleTitleChange(e.target.value)}
               placeholder={t.editor.titleField}
-              className="text-xs bg-background/60"
+              className="text-xs bg-stone-900 border-border/80 text-stone-100 placeholder:text-stone-400 focus-visible:ring-1 focus-visible:ring-brand"
             />
           </div>
 
@@ -152,7 +152,7 @@ export function PropertyPanel({
               onChange={(e) => handleSubtitleChange(e.target.value)}
               placeholder="Slide subtitle or lead description"
               rows={2}
-              className="text-xs resize-none bg-background/60"
+              className="text-xs resize-none bg-stone-900 border-border/80 text-stone-100 placeholder:text-stone-400 focus-visible:ring-1 focus-visible:ring-brand"
             />
           </div>
 
@@ -181,7 +181,7 @@ export function PropertyPanel({
                     value={bullet}
                     onChange={(e) => handleBulletChange(idx, e.target.value)}
                     rows={2}
-                    className="text-xs resize-none bg-background/60 flex-1 min-h-[46px]"
+                    className="text-xs resize-none bg-stone-900 border-border/80 text-stone-100 placeholder:text-stone-400 focus-visible:ring-1 focus-visible:ring-brand flex-1 min-h-[46px]"
                   />
                   <Button
                     size="icon"
@@ -226,13 +226,13 @@ export function PropertyPanel({
                       value={stat.value}
                       onChange={(e) => handleUpdateStat(idx, 'value', e.target.value)}
                       placeholder="e.g. 98.4%"
-                      className="text-xs font-mono font-bold h-7 bg-background/60 w-24"
+                      className="text-xs font-mono font-bold h-7 bg-stone-900 border-border/80 text-stone-100 placeholder:text-stone-400 focus-visible:ring-1 focus-visible:ring-brand w-24"
                     />
                     <Input
                       value={stat.label}
                       onChange={(e) => handleUpdateStat(idx, 'label', e.target.value)}
                       placeholder="e.g. Accuracy Rate"
-                      className="text-xs h-7 bg-background/60 flex-1"
+                      className="text-xs h-7 bg-stone-900 border-border/80 text-stone-100 placeholder:text-stone-400 focus-visible:ring-1 focus-visible:ring-brand flex-1"
                     />
                     <Button
                       size="icon"
@@ -257,13 +257,13 @@ export function PropertyPanel({
                 onChange={(e) => onUpdateContent({ quote: e.target.value })}
                 placeholder="The quote itself..."
                 rows={3}
-                className="text-xs resize-none bg-background/60"
+                className="text-xs resize-none bg-stone-900 border-border/80 text-stone-100 placeholder:text-stone-400 focus-visible:ring-1 focus-visible:ring-brand"
               />
               <Input
                 value={content.author || ''}
                 onChange={(e) => onUpdateContent({ author: e.target.value })}
                 placeholder="Quote Author (e.g. Satya Nadella, CEO)"
-                className="text-xs bg-background/60"
+                className="text-xs bg-stone-900 border-border/80 text-stone-100 placeholder:text-stone-400 focus-visible:ring-1 focus-visible:ring-brand"
               />
             </div>
           )}
@@ -331,13 +331,13 @@ export function PropertyPanel({
                 value={content.imagePrompt || ''}
                 onChange={(e) => onUpdateContent({ imagePrompt: e.target.value })}
                 placeholder="AI visual prompt or concept"
-                className="text-xs bg-background/60"
+                className="text-xs bg-stone-900 border-border/80 text-stone-100 placeholder:text-stone-400 focus-visible:ring-1 focus-visible:ring-brand"
               />
               <Input
                 value={content.imageUrl || ''}
                 onChange={(e) => onUpdateContent({ imageUrl: e.target.value })}
                 placeholder="Image URL or data URI"
-                className="text-xs bg-background/60"
+                className="text-xs bg-stone-900 border-border/80 text-stone-100 placeholder:text-stone-400 focus-visible:ring-1 focus-visible:ring-brand"
               />
             </div>
           )}
@@ -428,7 +428,7 @@ export function PropertyPanel({
               onChange={(e) => onSetNotes(e.target.value)}
               placeholder="Private notes visible in presenter mode..."
               rows={4}
-              className="text-xs resize-none bg-background/60"
+              className="text-xs resize-none bg-stone-900 border-border/80 text-stone-100 placeholder:text-stone-400 focus-visible:ring-1 focus-visible:ring-brand"
             />
           </div>
         </TabsContent>

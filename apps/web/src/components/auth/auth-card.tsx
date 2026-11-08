@@ -326,7 +326,7 @@ export function AuthCard({ mode }: { mode: 'signin' | 'register' }) {
                   onChange={(e) => setName(e.target.value)}
                   required
                   placeholder={t.auth.namePlaceholder}
-                  className="pl-10 h-10.5 rounded-xl bg-background/50 border-border/80 focus-visible:bg-background focus-visible:ring-brand/40 text-xs"
+                  className="pl-10 h-10.5 rounded-xl bg-stone-900 border-border/80 focus-visible:bg-stone-900 focus-visible:ring-brand/40 text-xs text-stone-100 placeholder:text-stone-400"
                 />
               </div>
             </div>
@@ -346,7 +346,7 @@ export function AuthCard({ mode }: { mode: 'signin' | 'register' }) {
                 autoComplete="email"
                 required
                 placeholder={t.auth.emailPlaceholder}
-                className="pl-10 h-10.5 rounded-xl bg-background/50 border-border/80 focus-visible:bg-background focus-visible:ring-brand/40 text-xs"
+                className="pl-10 h-10.5 rounded-xl bg-stone-900 border-border/80 focus-visible:bg-stone-900 focus-visible:ring-brand/40 text-xs text-stone-100 placeholder:text-stone-400"
               />
             </div>
           </div>
@@ -365,7 +365,7 @@ export function AuthCard({ mode }: { mode: 'signin' | 'register' }) {
                 autoComplete={isSignIn ? 'current-password' : 'new-password'}
                 required
                 placeholder={t.auth.passwordPlaceholder}
-                className="pl-10 pr-10 h-10.5 rounded-xl bg-background/50 border-border/80 focus-visible:bg-background focus-visible:ring-brand/40 text-xs"
+                className="pl-10 pr-10 h-10.5 rounded-xl bg-stone-900 border-border/80 focus-visible:bg-stone-900 focus-visible:ring-brand/40 text-xs text-stone-100 placeholder:text-stone-400"
               />
               <button
                 type="button"
@@ -508,7 +508,7 @@ export function AuthCard({ mode }: { mode: 'signin' | 'register' }) {
                 value={customGoogleEmail}
                 onChange={(e) => setCustomGoogleEmail(e.target.value)}
                 placeholder="name@gmail.com"
-                className="h-9.5 text-xs bg-background/60 border-border/70 rounded-xl"
+                className="h-9.5 text-xs bg-stone-900 border-border/80 text-stone-100 placeholder:text-stone-400 rounded-xl"
               />
               <Button
                 type="button"
@@ -618,7 +618,7 @@ export function AuthCard({ mode }: { mode: 'signin' | 'register' }) {
                   value={telegramUsername}
                   onChange={(e) => setTelegramUsername(e.target.value)}
                   placeholder={t.auth.telegramUsernamePlaceholder || 'e.g. chamroeun or phone number'}
-                  className="pl-9 h-9.5 text-xs bg-background/60 border-border/70 rounded-xl"
+                  className="pl-9 h-9.5 text-xs bg-stone-900 border-border/80 text-stone-100 placeholder:text-stone-400 rounded-xl"
                 />
               </div>
 

@@ -86,6 +86,19 @@ body {
   overflow-x: hidden;
 }
 
+/* Ensure solid dark background and high-contrast text for all form controls */
+input, textarea, select {
+  background-color: #1c1917;
+  color: #fcfbf9;
+}
+input::placeholder, textarea::placeholder {
+  color: #a8a29e;
+}
+.dark input, .dark textarea, .dark select {
+  background-color: #1c1917;
+  color: #fcfbf9;
+}
+
 /* Custom modern scrollbars */
 ::-webkit-scrollbar {
   width: 6px;

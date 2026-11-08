@@ -52,7 +52,7 @@ export function SlideCanvas({
   };
 
   return (
-    <div className="flex-1 flex flex-col bg-background/95 overflow-hidden h-full">
+    <div className="flex-1 flex flex-col bg-background overflow-hidden h-full">
       {/* Canvas Header / Controls */}
       <div className="h-10 px-4 border-b border-border/40 bg-card/20 flex items-center justify-between text-xs text-muted-foreground shrink-0">
         <div className="flex items-center gap-2">

@@ -166,7 +166,7 @@ export default function SettingsPage() {
                         value={customApiKey}
                         onChange={(e) => handleSaveCustomKey(e.target.value)}
                         placeholder="AIzaSy... paste your Gemini API key"
-                        className="w-full text-xs font-mono rounded-xl border border-border/80 bg-background/80 px-3.5 py-2.5 pr-10 text-foreground placeholder:text-muted-foreground/50 focus:outline-hidden focus:border-brand/60"
+                        className="w-full text-xs font-mono rounded-xl border border-border/80 bg-stone-900 px-3.5 py-2.5 pr-10 text-stone-100 placeholder:text-stone-400 focus:outline-hidden focus:border-brand/60"
                       />
                       <button
                         type="button"

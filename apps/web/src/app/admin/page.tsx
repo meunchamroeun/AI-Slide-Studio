@@ -357,7 +357,7 @@ export default function AdminPage() {
                   value={serverApiKey}
                   onChange={(e) => setServerApiKey(e.target.value)}
                   placeholder="AIzaSy... (Paste Google Gemini API Key from Google AI Studio)"
-                  className="pr-10 h-11 rounded-xl bg-background/60 border-border/80 text-xs font-mono"
+                  className="pr-10 h-11 rounded-xl bg-stone-900 border-border/80 text-xs font-mono text-stone-100 placeholder:text-stone-400"
                 />
                 <button
                   type="button"
@@ -378,7 +378,7 @@ export default function AdminPage() {
                 <select
                   value={serverModel}
                   onChange={(e) => setServerModel(e.target.value)}
-                  className="w-full h-11 rounded-xl bg-background/60 border border-border/80 px-3 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-brand cursor-pointer"
+                  className="w-full h-11 rounded-xl bg-stone-900 border border-border/80 px-3 text-xs text-stone-100 focus:outline-none focus:ring-1 focus:ring-brand cursor-pointer"
                 >
                   <option value="gemini-3.5-flash">gemini-3.5-flash (Recommended · Next-Gen Multimodal Free Tier)</option>
                   <option value="gemini-3.5-flash-lite">gemini-3.5-flash-lite (Ultra Fast Latency Free Tier)</option>

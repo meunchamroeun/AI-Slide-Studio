@@ -535,7 +535,7 @@ export function PromptGeneratorModal({
                       value={customApiKey}
                       onChange={(e) => handleCustomApiKeyChange(e.target.value)}
                       placeholder={t.modal.apiKeyPlaceholder || 'AIzaSy... paste your Gemini API key'}
-                      className="w-full text-xs font-mono rounded-lg border border-border/80 bg-background/80 px-3 py-2 pr-9 text-foreground placeholder:text-muted-foreground/60 focus:outline-hidden focus:border-brand/60"
+                      className="w-full text-xs font-mono rounded-lg border border-border/80 bg-stone-900 px-3 py-2 pr-9 text-stone-100 placeholder:text-stone-400 focus:outline-hidden focus:border-brand/60"
                     />
                     <button
                       type="button"

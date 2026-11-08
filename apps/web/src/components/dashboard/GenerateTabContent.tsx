@@ -732,7 +732,7 @@ export function GenerateTabContent({
           {showAdvancedSettings && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pt-4 mt-2">
               {/* Slide Count */}
-              <div className="space-y-2 p-3.5 rounded-xl bg-background/50 border border-border/80">
+              <div className="space-y-2 p-3.5 rounded-xl bg-card border border-border/80">
                 <div className="flex items-center justify-between text-xs">
                   <span className="font-medium text-foreground">{t.modal.slideCount}</span>
                   <span className="font-mono text-brand font-semibold">{slideCount}</span>
@@ -754,7 +754,7 @@ export function GenerateTabContent({
               </div>
 
               {/* Theme Selection */}
-              <div className="space-y-1.5 p-3.5 rounded-xl bg-background/50 border border-border/80">
+              <div className="space-y-1.5 p-3.5 rounded-xl bg-card border border-border/80">
                 <label className="text-xs font-medium text-foreground">{t.modal.themeLabel}</label>
                 <Select value={theme} onValueChange={(val) => setTheme(val as ThemeName)}>
                   <SelectTrigger className="h-9 text-xs bg-card border-border/80">
@@ -772,7 +772,7 @@ export function GenerateTabContent({
               </div>
 
               {/* Language Selection */}
-              <div className="space-y-1.5 p-3.5 rounded-xl bg-background/50 border border-border/80">
+              <div className="space-y-1.5 p-3.5 rounded-xl bg-card border border-border/80">
                 <label className="text-xs font-medium text-foreground">{t.common.language}</label>
                 <Select value={language} onValueChange={setLanguage}>
                   <SelectTrigger className="h-9 text-xs bg-card border-border/80">
@@ -786,7 +786,7 @@ export function GenerateTabContent({
               </div>
 
               {/* Aspect Ratio */}
-              <div className="space-y-1.5 p-3.5 rounded-xl bg-background/50 border border-border/80">
+              <div className="space-y-1.5 p-3.5 rounded-xl bg-card border border-border/80">
                 <label className="text-xs font-medium text-foreground">{t.modal.aspectRatio}</label>
                 <Select value={aspectRatio} onValueChange={(val) => setAspectRatio(val as AspectRatio)}>
                   <SelectTrigger className="h-9 text-xs bg-card border-border/80">
@@ -800,7 +800,7 @@ export function GenerateTabContent({
               </div>
 
               {/* Animation Preset Style */}
-              <div className="space-y-1.5 p-3.5 rounded-xl bg-background/50 border border-border/80">
+              <div className="space-y-1.5 p-3.5 rounded-xl bg-card border border-border/80">
                 <label className="text-xs font-medium text-foreground">{t.modal.animation}</label>
                 <Select value={animationStyle} onValueChange={(val: any) => setAnimationStyle(val)}>
                   <SelectTrigger className="h-9 text-xs bg-card border-border/80">
@@ -816,7 +816,7 @@ export function GenerateTabContent({
               </div>
 
               {/* Gemini API Key Source */}
-              <div className="space-y-1.5 p-3.5 rounded-xl bg-background/50 border border-border/80">
+              <div className="space-y-1.5 p-3.5 rounded-xl bg-card border border-border/80">
                 <label className="text-xs font-medium text-foreground">{t.modal.apiKeySourceLabel}</label>
                 <Select value={apiKeySource} onValueChange={(val: any) => handleApiKeySourceChange(val)}>
                   <SelectTrigger className="h-9 text-xs bg-card border-border/80">

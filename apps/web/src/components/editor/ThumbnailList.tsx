@@ -166,7 +166,7 @@ export function ThumbnailList({
               </div>
 
               {/* Mini Slide Preview Card */}
-              <div className="aspect-video w-full rounded bg-background/80 border border-border/50 p-2 flex flex-col justify-between overflow-hidden">
+              <div className="aspect-video w-full rounded bg-stone-900 border border-border/50 p-2 flex flex-col justify-between overflow-hidden">
                 <p className="text-[10px] font-bold text-foreground line-clamp-1 leading-tight">
                   {slide.content?.title || `Slide ${index + 1}`}
                 </p>

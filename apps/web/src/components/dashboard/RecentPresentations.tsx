@@ -140,7 +140,7 @@ export function RecentPresentations({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={t.presentations.searchPlaceholder}
-              className="pl-9 h-9 text-xs bg-background/60 border-border/80 rounded-full focus-visible:ring-brand/40"
+              className="pl-9 h-9 text-xs bg-stone-900 border-border/80 text-stone-100 placeholder:text-stone-400 rounded-full focus-visible:ring-brand/40"
             />
           </div>
         </div>

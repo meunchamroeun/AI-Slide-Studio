@@ -85,13 +85,13 @@ export function PromptGeneratorHero({ onStartGenerating }: PromptGeneratorHeroPr
 
         {/* Prompt Composer */}
         <form onSubmit={handleSubmit} className="space-y-3">
-          <div className="relative rounded-2xl border border-border/80 bg-background/50 p-3 sm:p-4 shadow-inner focus-within:border-brand/70 focus-within:ring-2 focus-within:ring-brand/20 transition-all backdrop-blur-sm">
+          <div className="relative rounded-2xl border border-border/80 bg-stone-900/90 p-3 sm:p-4 shadow-inner focus-within:border-brand/70 focus-within:ring-2 focus-within:ring-brand/20 transition-all backdrop-blur-sm">
             <Textarea
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
               placeholder={t.hero.placeholder}
               rows={4}
-              className="w-full resize-none border-0 bg-transparent text-xs sm:text-sm text-foreground placeholder:text-muted-foreground/60 focus-visible:ring-0 shadow-none p-0 leading-relaxed"
+              className="w-full resize-none border-0 bg-transparent text-xs sm:text-sm text-stone-100 placeholder:text-stone-400 focus-visible:ring-0 shadow-none p-0 leading-relaxed"
             />
 
             {/* Bottom Controls Row inside composer */}
