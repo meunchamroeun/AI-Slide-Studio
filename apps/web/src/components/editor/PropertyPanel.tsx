@@ -20,6 +20,8 @@ import {
   CheckCircle2,
   ExternalLink,
   Palette,
+  Wand2,
+  Loader2,
 } from 'lucide-react';
 import {
   Slide,
@@ -45,6 +47,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useI18n } from '@/components/i18n-provider';
+import { api } from '@/services/api';
 
 const ICON_OPTIONS = [
   'zap',
@@ -67,7 +70,9 @@ const ICON_OPTIONS = [
 interface PropertyPanelProps {
   slide: Slide;
   theme: ThemeName;
+  presentationId?: string;
   onUpdateContent: (contentUpdates: Partial<Slide['content']>) => void;
+  onReplaceSlide?: (newSlide: Slide) => void;
   onSetLayout: (layout: SlideLayout) => void;
   onSetTheme: (theme: ThemeName) => void;
   onSetAnimation: (preset: AnimationPreset, duration?: number) => void;
@@ -78,7 +83,9 @@ interface PropertyPanelProps {
 export function PropertyPanel({
   slide,
   theme,
+  presentationId,
   onUpdateContent,
+  onReplaceSlide,
   onSetLayout,
   onSetTheme,
   onSetAnimation,
@@ -87,6 +94,35 @@ export function PropertyPanel({
 }: PropertyPanelProps) {
   const { t, locale } = useI18n();
   const content = slide.content || { title: '' };
+
+  // AI Prompt State
+  const [aiPrompt, setAiPrompt] = React.useState('');
+  const [selectedTargetLayout, setSelectedTargetLayout] = React.useState<string>('keep');
+  const [isGeneratingAi, setIsGeneratingAi] = React.useState(false);
+  const [aiError, setAiError] = React.useState<string | null>(null);
+
+  const handleAiUpdate = async () => {
+    if (!aiPrompt.trim() || !presentationId || !onReplaceSlide) return;
+    try {
+      setIsGeneratingAi(true);
+      setAiError(null);
+      const targetLayout = selectedTargetLayout !== 'keep' ? (selectedTargetLayout as SlideLayout) : undefined;
+      const apiKey = typeof window !== 'undefined' ? localStorage.getItem('slidestudio_custom_gemini_api_key') || undefined : undefined;
+      const updated = await api.regenerateSlide(presentationId, slide.id, {
+        prompt: aiPrompt.trim(),
+        layout: targetLayout,
+        preserveNotes: true,
+        apiKey,
+      });
+      onReplaceSlide(updated);
+      setAiPrompt('');
+    } catch (err: any) {
+      console.error('AI update failed:', err);
+      setAiError(err.message || 'Failed to update slide with AI');
+    } finally {
+      setIsGeneratingAi(false);
+    }
+  };
 
   // Handlers for Basic Info
   const handleBadgeChange = (val: string) => onUpdateContent({ badge: val });
@@ -274,6 +310,116 @@ export function PropertyPanel({
             Tab 1: Slide Content & Deep Customization
         ========================================================================= */}
         <TabsContent value="content" className="flex-1 overflow-y-auto p-4 space-y-4 m-0">
+          {/* =========================================================================
+              AI Copilot Prompt to Edit / Update
+          ========================================================================= */}
+          {presentationId && onReplaceSlide && (
+            <div className="rounded-xl border border-brand/50 bg-stone-900/90 p-3.5 space-y-3 shadow-lg relative overflow-hidden">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5 text-xs font-semibold text-brand">
+                  <Sparkles className="size-4 animate-pulse" />
+                  <span>{t.editor.aiPromptTitle || 'AI Prompt to Edit / Update'}</span>
+                </div>
+                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-brand/20 text-brand font-medium">
+                  Gemini AI
+                </span>
+              </div>
+
+              <p className="text-[11px] text-muted-foreground leading-tight">
+                {t.editor.aiPromptDesc || 'Instruct Gemini AI to rewrite, add elements, or update this slide'}
+              </p>
+
+              <Textarea
+                value={aiPrompt}
+                onChange={(e) => setAiPrompt(e.target.value)}
+                placeholder={
+                  t.editor.aiPromptPlaceholder ||
+                  'e.g. Add 4 security feature cards, make bullet points punchier, or translate into Khmer...'
+                }
+                rows={2}
+                className="text-xs resize-none bg-stone-950/90 border-border/80 text-stone-100 placeholder:text-stone-400 focus-visible:ring-1 focus-visible:ring-brand"
+              />
+
+              {/* Quick Prompt Suggestion Chips */}
+              <div className="space-y-1.5">
+                <span className="text-[10px] font-medium text-muted-foreground flex items-center gap-1">
+                  <Wand2 className="size-3 text-brand" />
+                  {t.editor.quickPromptLabel || 'Quick Suggestions'}:
+                </span>
+                <div className="flex flex-wrap gap-1.5">
+                  {[
+                    { key: 'punchy', text: t.editor.quickPrompts?.punchy || 'Make more punchy' },
+                    { key: 'metrics', text: t.editor.quickPrompts?.metrics || 'Add statistics & metrics' },
+                    { key: 'features', text: t.editor.quickPrompts?.features || 'Convert to feature cards', layout: 'feature-grid' },
+                    { key: 'timeline', text: t.editor.quickPrompts?.timeline || 'Convert to timeline', layout: 'timeline' },
+                    { key: 'translateKhmer', text: t.editor.quickPrompts?.translateKhmer || 'Translate to Khmer' },
+                    { key: 'professional', text: t.editor.quickPrompts?.professional || 'More executive & professional' },
+                  ].map((chip) => (
+                    <button
+                      key={chip.key}
+                      type="button"
+                      onClick={() => {
+                        setAiPrompt(chip.text);
+                        if (chip.layout) setSelectedTargetLayout(chip.layout as SlideLayout);
+                      }}
+                      className="text-[10px] px-2 py-0.5 rounded-full bg-stone-800/80 hover:bg-brand/20 hover:text-brand border border-border/60 text-stone-300 transition-colors cursor-pointer"
+                    >
+                      + {chip.text}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Target Layout Selector (Optional) */}
+              <div className="flex items-center justify-between gap-2 pt-1">
+                <label className="text-[11px] font-medium text-muted-foreground whitespace-nowrap">
+                  {t.editor.targetLayoutLabel || 'Target Layout'}:
+                </label>
+                <Select
+                  value={selectedTargetLayout}
+                  onValueChange={(val) => setSelectedTargetLayout(val)}
+                >
+                  <SelectTrigger className="h-7 text-[11px] bg-stone-950 border-border/80 flex-1">
+                    <SelectValue placeholder="Keep Current Layout" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-card border-border text-xs">
+                    <SelectItem value="keep">{t.editor.keepCurrentLayout || 'Keep Current Layout'}</SelectItem>
+                    <SelectItem value="feature-grid">Feature Cards Grid</SelectItem>
+                    <SelectItem value="timeline">Timeline Milestones</SelectItem>
+                    <SelectItem value="comparison">Comparison Columns</SelectItem>
+                    <SelectItem value="statistics">Metric Statistics</SelectItem>
+                    <SelectItem value="title-content">Title & Bullet Points</SelectItem>
+                    <SelectItem value="two-columns">Two Columns</SelectItem>
+                    <SelectItem value="key-takeaways">Key Takeaways</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Submit Action Button */}
+              <Button
+                type="button"
+                disabled={isGeneratingAi || !aiPrompt.trim()}
+                onClick={handleAiUpdate}
+                className="w-full h-8 bg-brand hover:bg-brand/90 text-stone-950 font-semibold text-xs gap-1.5 shadow-md shadow-brand/10 cursor-pointer"
+              >
+                {isGeneratingAi ? (
+                  <>
+                    <Loader2 className="size-3.5 animate-spin" />
+                    <span>{t.editor.updatingWithAi || 'Updating with AI...'}</span>
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="size-3.5" />
+                    <span>{t.editor.updateWithAiBtn || 'Update with AI'}</span>
+                  </>
+                )}
+              </Button>
+
+              {aiError && (
+                <p className="text-[10px] text-destructive font-medium leading-tight">{aiError}</p>
+              )}
+            </div>
+          )}
           {/* Eyebrow / Category Badge */}
           <div className="space-y-1.5">
             <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">

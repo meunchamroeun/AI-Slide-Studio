@@ -222,6 +222,7 @@ export const RegenerateSlideDtoSchema = z.object({
   prompt: z.string().min(3).max(2000).optional(),
   layout: SlideLayoutEnum.optional(),
   preserveNotes: z.boolean().default(true),
+  apiKey: z.string().optional(),
 });
 
 export const RewriteContentDtoSchema = z.object({

@@ -684,3 +684,122 @@ export async function generatePresentationDocument(dto: GeneratePresentationDto)
 
   return generateDeterministicPresentation(dto);
 }
+
+export async function regenerateSlideWithGemini(
+  existingSlide: Slide,
+  userPrompt: string,
+  targetLayout?: SlideLayout,
+  apiKeyParam?: string,
+): Promise<Slide> {
+  const apiKey = (apiKeyParam?.trim() && apiKeyParam !== 'YOUR_GEMINI_API_KEY') ? apiKeyParam.trim() : API_KEY;
+  const layout = targetLayout || existingSlide.layout;
+
+  if (apiKey && apiKey !== 'YOUR_GEMINI_API_KEY') {
+    try {
+      const client = new GoogleGenAI({ apiKey });
+      const prompt = `You are an elite executive presentation designer and copywriter.
+Update the following presentation slide according to the user's specific prompt instructions.
+
+USER PROMPT / INSTRUCTIONS:
+"${userPrompt}"
+
+CURRENT SLIDE DATA:
+${JSON.stringify(existingSlide, null, 2)}
+
+DESIRED SLIDE LAYOUT:
+"${layout}"
+
+CRITICAL INSTRUCTIONS:
+1. Return ONLY valid JSON adhering strictly to the Slide format.
+2. ZERO EMOJIS anywhere in the text.
+3. If layout is 'feature-grid', ensure 3 or 4 feature cards with id, title, description, and icon (one of: zap, cpu, shield, database, activity, layers, lock, check, spark, bar-chart, users, globe, server, workflow, terminal).
+4. If layout is 'timeline', ensure 3 to 4 milestones with phase, title, description, dateRange, status ('completed'|'in-progress'|'pending').
+5. If layout is 'comparison', ensure left and right columns with title, subtitle, points array, isHighlighted boolean.
+6. If layout is 'statistics', ensure 2 to 4 statistics with value, label, trend ('up'|'down'|'neutral').
+7. Keep professional, punchy, C-level presentation tone.
+8. Support English or Khmer depending on the prompt and current slide language.
+
+JSON SCHEMA:
+{
+  "id": "${existingSlide.id}",
+  "slideNumber": ${existingSlide.slideNumber},
+  "layout": "${layout}",
+  "content": {
+    "badge": "OPTIONAL CATEGORY EYEBROW",
+    "title": "Slide Title",
+    "subtitle": "Subtitle or lead description",
+    "bulletPoints": ["Point 1", "Point 2"],
+    "features": [{"id": "f1", "title": "Card Title", "description": "Card description", "icon": "shield"}],
+    "timeline": [{"id": "t1", "phase": "Phase 1", "title": "Milestone", "description": "Details", "dateRange": "Q1", "status": "completed"}],
+    "comparison": {
+      "left": {"title": "Legacy", "subtitle": "Manual", "points": ["Point A"], "isHighlighted": false},
+      "right": {"title": "Modern", "subtitle": "Automated", "points": ["Point B"], "isHighlighted": true}
+    },
+    "statistics": [{"id": "s1", "value": "99.9%", "label": "Reliability", "trend": "up"}],
+    "body": "Optional body text",
+    "takeaways": ["Key takeaway"]
+  },
+  "notes": "Speaker notes"
+}`;
+
+      let response;
+      try {
+        response = await client.models.generateContent({
+          model: DEFAULT_MODEL,
+          contents: prompt,
+          config: {
+            responseMimeType: 'application/json',
+            temperature: 0.7,
+          },
+        });
+      } catch (err: any) {
+        response = await client.models.generateContent({
+          model: 'gemini-2.5-flash',
+          contents: prompt,
+          config: {
+            responseMimeType: 'application/json',
+            temperature: 0.7,
+          },
+        });
+      }
+
+      const raw = response.text || '';
+      const cleaned = cleanJsonString(raw);
+      const parsed = JSON.parse(cleaned);
+
+      return {
+        id: existingSlide.id,
+        slideNumber: existingSlide.slideNumber,
+        layout,
+        content: sanitizeSlideContent(parsed.content || parsed),
+        notes: parsed.notes || existingSlide.notes || '',
+        animation: existingSlide.animation || {
+          preset: selectAnimationForLayout(layout),
+          duration: 0.8,
+          delay: 0,
+          easing: 'power2.out',
+          direction: 'none',
+        },
+        transition: existingSlide.transition || {
+          type: 'fade',
+          duration: 0.6,
+          easing: 'power2.out',
+        },
+      };
+    } catch (err: any) {
+      console.warn('Gemini slide regeneration failed, falling back to deterministic:', err.message);
+    }
+  }
+
+  // Fallback to deterministic slide generator
+  const fallback = buildDeterministicSlide(
+    existingSlide.slideNumber,
+    layout,
+    userPrompt || existingSlide.content?.title || 'Slide'
+  );
+  fallback.id = existingSlide.id;
+  if (existingSlide.notes) {
+    fallback.notes = existingSlide.notes;
+  }
+  return fallback;
+}

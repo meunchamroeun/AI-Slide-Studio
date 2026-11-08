@@ -338,6 +338,30 @@ export function useEditorStore(initialDocument: PresentationDocument) {
     };
   }, []);
 
+  const replaceSlide = useCallback(
+    (slideId: string, newSlide: Slide) => {
+      const updatedSlides = document.slides.map((s) => {
+        if (s.id === slideId) {
+          return {
+            ...newSlide,
+            id: s.id,
+            slideNumber: s.slideNumber,
+          };
+        }
+        return s;
+      });
+
+      const updatedDoc = {
+        ...document,
+        slides: updatedSlides,
+        updatedAt: new Date().toISOString(),
+      };
+
+      pushState(updatedDoc);
+    },
+    [document, pushState],
+  );
+
   return {
     document,
     setDocument,
@@ -352,6 +376,7 @@ export function useEditorStore(initialDocument: PresentationDocument) {
     saveNow,
     // Mutations
     updateActiveSlide,
+    replaceSlide,
     updateSlideContent,
     setSlideLayout,
     setSlideAnimation,

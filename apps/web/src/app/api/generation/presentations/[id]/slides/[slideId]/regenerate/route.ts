@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { sql } from '@/lib/db';
 import { RegenerateSlideDtoSchema } from '@ai-slide-studio/shared';
-import { buildDeterministicSlide } from '@/lib/presentation-generator';
+import { regenerateSlideWithGemini } from '@/lib/presentation-generator';
 
 export const dynamic = 'force-dynamic';
 
@@ -30,11 +30,18 @@ export async function POST(
 
     const existingSlide = doc.slides[slideIdx];
     const layout = validated.layout || existingSlide.layout;
-    const topic = validated.prompt || existingSlide.content?.title || 'Slide';
+    const prompt = validated.prompt || existingSlide.content?.title || 'Slide';
 
-    const newSlide = buildDeterministicSlide(existingSlide.slideNumber, layout, topic);
+    const newSlide = await regenerateSlideWithGemini(
+      existingSlide,
+      prompt,
+      layout,
+      validated.apiKey
+    );
+
     newSlide.id = existingSlide.id;
-    if (validated.preserveNotes && existingSlide.notes) {
+    newSlide.slideNumber = existingSlide.slideNumber;
+    if (validated.preserveNotes && existingSlide.notes && !newSlide.notes) {
       newSlide.notes = existingSlide.notes;
     }
 
@@ -48,6 +55,7 @@ export async function POST(
 
     return NextResponse.json(newSlide);
   } catch (err: any) {
+    console.error('Failed to regenerate slide:', err);
     return NextResponse.json({ message: err.message || 'Regeneration error' }, { status: 400 });
   }
 }

@@ -156,7 +156,9 @@ function EditorMain({ initialDoc }: { initialDoc: PresentationDocument }) {
           <PropertyPanel
             slide={editor.activeSlide}
             theme={editor.document.theme}
+            presentationId={editor.document.id}
             onUpdateContent={editor.updateSlideContent}
+            onReplaceSlide={(newSlide) => editor.replaceSlide(editor.activeSlide!.id, newSlide)}
             onSetLayout={editor.setSlideLayout}
             onSetTheme={editor.setTheme}
             onSetAnimation={editor.setSlideAnimation}
