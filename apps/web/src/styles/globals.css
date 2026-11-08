@@ -4,6 +4,7 @@
 
 @layer base {
   :root {
+    color-scheme: light;
     --radius: 1.625rem;
     --background: #fafaf9;
     --foreground: #1c1917;
@@ -37,6 +38,7 @@
   }
 
   .dark {
+    color-scheme: dark;
     --background: #0f0d0c;
     --foreground: #fcfbf9;
 
@@ -88,15 +90,42 @@ body {
 
 /* Ensure solid dark background and high-contrast text for all form controls */
 input, textarea, select {
-  background-color: #1c1917;
-  color: #fcfbf9;
+  font-family: inherit;
 }
-input::placeholder, textarea::placeholder {
-  color: #a8a29e;
+
+.dark input, 
+.dark textarea, 
+.dark select {
+  background-color: #1c1917 !important;
+  color: #fcfbf9 !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
 }
-.dark input, .dark textarea, .dark select {
-  background-color: #1c1917;
-  color: #fcfbf9;
+
+.dark input::placeholder, 
+.dark textarea::placeholder {
+  color: #a8a29e !important;
+  opacity: 1 !important;
+}
+
+:not(.dark) input,
+:not(.dark) textarea,
+:not(.dark) select {
+  background-color: #ffffff;
+  color: #1c1917;
+  border-color: rgba(0, 0, 0, 0.15);
+}
+
+:not(.dark) input::placeholder,
+:not(.dark) textarea::placeholder {
+  color: #78716c;
+}
+
+.dark input:-webkit-autofill,
+.dark textarea:-webkit-autofill,
+.dark select:-webkit-autofill {
+  -webkit-text-fill-color: #fcfbf9 !important;
+  -webkit-box-shadow: 0 0 0px 1000px #1c1917 inset !important;
+  transition: background-color 5000s ease-in-out 0s;
 }
 
 /* Custom modern scrollbars */

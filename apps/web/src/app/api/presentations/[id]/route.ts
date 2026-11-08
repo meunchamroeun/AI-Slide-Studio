@@ -25,6 +25,41 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
   }
 }
 
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const { id } = await params;
+    const updateData = await req.json();
+
+    const title = updateData.title || 'Untitled Presentation';
+    const description = updateData.description || '';
+    const theme = updateData.theme || 'modern-dark';
+    const aspectRatio = updateData.aspectRatio || '16:9';
+    const slideCount = Array.isArray(updateData.slides) ? updateData.slides.length : 0;
+
+    await sql`
+      UPDATE presentations
+      SET
+        title = ${title},
+        description = ${description},
+        theme = ${theme},
+        "aspectRatio" = ${aspectRatio},
+        "slideCount" = ${slideCount},
+        document = ${JSON.stringify(updateData)},
+        "updatedAt" = NOW()
+      WHERE id = ${id};
+    `;
+
+    return NextResponse.json(updateData);
+  } catch (err: any) {
+    console.error('Failed to update presentation:', err);
+    return NextResponse.json({ error: err.message }, { status: 500 });
+  }
+}
+
+export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  return PATCH(req, { params });
+}
+
 export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;

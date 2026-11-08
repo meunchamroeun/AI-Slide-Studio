@@ -18,6 +18,7 @@ import {
   ChevronLeft,
   Sparkles,
   Sliders,
+  SlidersHorizontal,
   Monitor,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -48,6 +49,8 @@ interface EditorToolbarProps {
   onTitleChange: (title: string) => void;
   onReplayAnimation: () => void;
   onImportDocument: (doc: PresentationDocument) => void;
+  showPropertyPanel?: boolean;
+  onTogglePropertyPanel?: () => void;
 }
 
 export function EditorToolbar({
@@ -61,6 +64,8 @@ export function EditorToolbar({
   onTitleChange,
   onReplayAnimation,
   onImportDocument,
+  showPropertyPanel,
+  onTogglePropertyPanel,
 }: EditorToolbarProps) {
   const router = useRouter();
   const { t } = useI18n();
@@ -239,6 +244,23 @@ export function EditorToolbar({
 
       {/* Right: Toggles + Present & Export actions */}
       <div className="flex items-center gap-2">
+        {onTogglePropertyPanel && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onTogglePropertyPanel}
+            className={`h-8 text-xs gap-1.5 rounded-full px-3 cursor-pointer transition-all ${
+              showPropertyPanel
+                ? 'bg-brand/15 text-brand border border-brand/40 font-semibold'
+                : 'text-muted-foreground hover:text-foreground border border-border/60'
+            }`}
+            title="Toggle Customization Panel"
+          >
+            <SlidersHorizontal className="size-3.5 text-brand" />
+            <span>{t.editor.customize || 'Customize'}</span>
+          </Button>
+        )}
+
         <LanguageToggle />
         <ThemeToggle />
 

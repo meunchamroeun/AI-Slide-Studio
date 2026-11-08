@@ -4,13 +4,22 @@ import React from 'react';
 import {
   Type,
   Layout,
-  Palette,
   Sparkles,
   FileText,
   Plus,
   Trash2,
   MoveRight,
   TrendingUp,
+  Tag,
+  Layers,
+  Calendar,
+  Columns2,
+  SplitSquareVertical,
+  Quote,
+  AlignLeft,
+  CheckCircle2,
+  ExternalLink,
+  Palette,
 } from 'lucide-react';
 import {
   Slide,
@@ -19,6 +28,9 @@ import {
   AnimationPreset,
   TransitionType,
   StatisticItem,
+  FeatureCard,
+  TimelineItem,
+  ComparisonColumn,
 } from '@ai-slide-studio/shared';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -33,6 +45,24 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useI18n } from '@/components/i18n-provider';
+
+const ICON_OPTIONS = [
+  'zap',
+  'cpu',
+  'shield',
+  'database',
+  'activity',
+  'layers',
+  'lock',
+  'rocket',
+  'globe',
+  'users',
+  'check',
+  'server',
+  'gauge',
+  'network',
+  'target',
+] as const;
 
 interface PropertyPanelProps {
   slide: Slide;
@@ -55,67 +85,179 @@ export function PropertyPanel({
   onSetTransition,
   onSetNotes,
 }: PropertyPanelProps) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const content = slide.content || { title: '' };
 
-  const handleTitleChange = (val: string) => {
-    onUpdateContent({ title: val });
+  // Handlers for Basic Info
+  const handleBadgeChange = (val: string) => onUpdateContent({ badge: val });
+  const handleTitleChange = (val: string) => onUpdateContent({ title: val });
+  const handleSubtitleChange = (val: string) => onUpdateContent({ subtitle: val });
+  const handleBodyChange = (val: string) => onUpdateContent({ body: val });
+
+  // Feature Cards Handlers (for feature-grid)
+  const handleAddFeature = () => {
+    const current: FeatureCard[] = [...(content.features || [])];
+    current.push({
+      id: `feat-${Date.now()}`,
+      title: 'New Feature Module',
+      description: 'Describe the core capability, user workflow, and technical benefits.',
+      icon: 'zap',
+      badge: `PILLAR ${current.length + 1}`,
+    });
+    onUpdateContent({ features: current });
   };
 
-  const handleSubtitleChange = (val: string) => {
-    onUpdateContent({ subtitle: val });
+  const handleUpdateFeature = (index: number, field: keyof FeatureCard, val: string) => {
+    const current = [...(content.features || [])];
+    if (current[index]) {
+      current[index] = { ...current[index], [field]: val };
+      onUpdateContent({ features: current });
+    }
+  };
+
+  const handleRemoveFeature = (index: number) => {
+    const current = (content.features || []).filter((_, i) => i !== index);
+    onUpdateContent({ features: current });
+  };
+
+  // Timeline Handlers (for timeline)
+  const handleAddTimeline = () => {
+    const current: TimelineItem[] = [...(content.timeline || [])];
+    current.push({
+      id: `time-${Date.now()}`,
+      phase: `PHASE 0${current.length + 1}`,
+      title: 'Strategic Milestone',
+      description: 'Milestone objectives and delivery scope.',
+      dateRange: 'Q1 - Q2',
+      status: 'in-progress',
+    });
+    onUpdateContent({ timeline: current });
+  };
+
+  const handleUpdateTimeline = (index: number, field: keyof TimelineItem, val: any) => {
+    const current = [...(content.timeline || [])];
+    if (current[index]) {
+      current[index] = { ...current[index], [field]: val };
+      onUpdateContent({ timeline: current });
+    }
+  };
+
+  const handleRemoveTimeline = (index: number) => {
+    const current = (content.timeline || []).filter((_, i) => i !== index);
+    onUpdateContent({ timeline: current });
+  };
+
+  // Comparison Handlers (for comparison)
+  const handleUpdateComparison = (side: 'left' | 'right', field: keyof ComparisonColumn, val: any) => {
+    const current = content.comparison || {
+      left: { title: 'Traditional', subtitle: 'Legacy', points: [], isHighlighted: false },
+      right: { title: 'Modern', subtitle: 'Automated', points: [], isHighlighted: true },
+    };
+    onUpdateContent({
+      comparison: {
+        ...current,
+        [side]: {
+          ...current[side],
+          [field]: val,
+        },
+      },
+    });
+  };
+
+  const handleAddComparisonPoint = (side: 'left' | 'right') => {
+    const current = content.comparison || {
+      left: { title: 'Traditional', subtitle: 'Legacy', points: [], isHighlighted: false },
+      right: { title: 'Modern', subtitle: 'Automated', points: [], isHighlighted: true },
+    };
+    const points = [...(current[side].points || [])];
+    points.push('New operational distinction or point');
+    handleUpdateComparison(side, 'points', points);
+  };
+
+  const handleUpdateComparisonPoint = (side: 'left' | 'right', pointIdx: number, val: string) => {
+    const current = content.comparison;
+    if (!current) return;
+    const points = [...(current[side].points || [])];
+    points[pointIdx] = val;
+    handleUpdateComparison(side, 'points', points);
+  };
+
+  const handleRemoveComparisonPoint = (side: 'left' | 'right', pointIdx: number) => {
+    const current = content.comparison;
+    if (!current) return;
+    const points = (current[side].points || []).filter((_, i) => i !== pointIdx);
+    handleUpdateComparison(side, 'points', points);
   };
 
   // Bullet points handlers
   const handleBulletChange = (index: number, val: string) => {
-    const currentBullets = [...(content.bulletPoints || [])];
-    currentBullets[index] = val;
-    onUpdateContent({ bulletPoints: currentBullets });
+    const current = [...(content.bulletPoints || [])];
+    current[index] = val;
+    onUpdateContent({ bulletPoints: current });
   };
 
   const handleAddBullet = () => {
-    const currentBullets = [...(content.bulletPoints || [])];
-    currentBullets.push('New key takeaway or supporting point');
-    onUpdateContent({ bulletPoints: currentBullets });
+    const current = [...(content.bulletPoints || [])];
+    current.push('New key takeaway or supporting point');
+    onUpdateContent({ bulletPoints: current });
   };
 
   const handleRemoveBullet = (index: number) => {
-    const currentBullets = (content.bulletPoints || []).filter((_, i) => i !== index);
-    onUpdateContent({ bulletPoints: currentBullets });
+    const current = (content.bulletPoints || []).filter((_, i) => i !== index);
+    onUpdateContent({ bulletPoints: current });
+  };
+
+  // Takeaways handlers
+  const handleTakeawayChange = (index: number, val: string) => {
+    const current = [...(content.takeaways || [])];
+    current[index] = val;
+    onUpdateContent({ takeaways: current });
+  };
+
+  const handleAddTakeaway = () => {
+    const current = [...(content.takeaways || [])];
+    current.push('Key strategic principle or recommendation');
+    onUpdateContent({ takeaways: current });
+  };
+
+  const handleRemoveTakeaway = (index: number) => {
+    const current = (content.takeaways || []).filter((_, i) => i !== index);
+    onUpdateContent({ takeaways: current });
   };
 
   // Statistics metric handlers
   const handleAddStat = () => {
-    const currentStats: StatisticItem[] = [...(content.statistics || [])];
-    currentStats.push({
+    const current: StatisticItem[] = [...(content.statistics || [])];
+    current.push({
       id: `stat-${Date.now()}`,
       value: '+45%',
       label: 'Efficiency Gain',
       subtext: 'Year-over-Year',
       icon: 'activity',
+      trend: 'up',
     });
-    onUpdateContent({ statistics: currentStats });
+    onUpdateContent({ statistics: current });
   };
 
-  const handleUpdateStat = (index: number, field: keyof StatisticItem, val: string) => {
-    const currentStats = [...(content.statistics || [])];
-    if (currentStats[index]) {
-      currentStats[index] = { ...currentStats[index], [field]: val };
-      onUpdateContent({ statistics: currentStats });
+  const handleUpdateStat = (index: number, field: keyof StatisticItem, val: any) => {
+    const current = [...(content.statistics || [])];
+    if (current[index]) {
+      current[index] = { ...current[index], [field]: val };
+      onUpdateContent({ statistics: current });
     }
   };
 
   const handleRemoveStat = (index: number) => {
-    const currentStats = (content.statistics || []).filter((_, i) => i !== index);
-    onUpdateContent({ statistics: currentStats });
+    const current = (content.statistics || []).filter((_, i) => i !== index);
+    onUpdateContent({ statistics: current });
   };
 
   return (
-    <aside className="w-80 border-l border-border/60 bg-card/40 flex flex-col shrink-0 h-full overflow-hidden">
+    <aside className="w-80 sm:w-96 border-l border-border/60 bg-card/60 flex flex-col shrink-0 h-full overflow-hidden shadow-xl z-20">
       <Tabs defaultValue="content" className="flex flex-col h-full">
         {/* Tab Headers */}
-        <div className="p-3 border-b border-border/50 bg-card/60">
-          <TabsList className="grid grid-cols-3 w-full h-8 bg-secondary/50">
+        <div className="p-3 border-b border-border/50 bg-card/80 backdrop-blur-md">
+          <TabsList className="grid grid-cols-3 w-full h-8 bg-stone-900 border border-border/60">
             <TabsTrigger value="content" className="text-xs">
               {t.editor.content}
             </TabsTrigger>
@@ -128,19 +270,35 @@ export function PropertyPanel({
           </TabsList>
         </div>
 
-        {/* Tab 1: Slide Content */}
+        {/* =========================================================================
+            Tab 1: Slide Content & Deep Customization
+        ========================================================================= */}
         <TabsContent value="content" className="flex-1 overflow-y-auto p-4 space-y-4 m-0">
+          {/* Eyebrow / Category Badge */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+              <Tag className="h-3.5 w-3.5 text-brand" />
+              {t.editor.badgeField || 'Eyebrow / Category Badge'}
+            </label>
+            <Input
+              value={content.badge || ''}
+              onChange={(e) => handleBadgeChange(e.target.value)}
+              placeholder="e.g. — ARCHITECTURE or KEY LESSONS"
+              className="text-xs bg-stone-900 border-border/80 text-stone-100 placeholder:text-stone-400 focus-visible:ring-1 focus-visible:ring-brand"
+            />
+          </div>
+
           {/* Title */}
           <div className="space-y-1.5">
             <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-              <Type className="h-3.5 w-3.5 text-primary" />
+              <Type className="h-3.5 w-3.5 text-brand" />
               {t.editor.titleField}
             </label>
             <Input
               value={content.title || ''}
               onChange={(e) => handleTitleChange(e.target.value)}
               placeholder={t.editor.titleField}
-              className="text-xs bg-stone-900 border-border/80 text-stone-100 placeholder:text-stone-400 focus-visible:ring-1 focus-visible:ring-brand"
+              className="text-xs bg-stone-900 border-border/80 text-stone-100 placeholder:text-stone-400 focus-visible:ring-1 focus-visible:ring-brand font-medium"
             />
           </div>
 
@@ -156,102 +314,530 @@ export function PropertyPanel({
             />
           </div>
 
-          {/* Bullet Points */}
-          <div className="space-y-2 pt-2 border-t border-border/40">
-            <div className="flex items-center justify-between">
-              <label className="text-xs font-semibold text-foreground">{t.editor.bulletPoints}</label>
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={handleAddBullet}
-                className="h-6 px-2 text-[11px] text-primary hover:bg-primary/10 gap-1"
-              >
-                <Plus className="h-3 w-3" />
-                Add Point
-              </Button>
-            </div>
-
-            <div className="space-y-2">
-              {(content.bulletPoints || []).map((bullet, idx) => (
-                <div key={idx} className="flex items-start gap-1.5">
-                  <span className="text-[10px] font-mono text-muted-foreground mt-2 w-4">
-                    {idx + 1}.
-                  </span>
-                  <Textarea
-                    value={bullet}
-                    onChange={(e) => handleBulletChange(idx, e.target.value)}
-                    rows={2}
-                    className="text-xs resize-none bg-stone-900 border-border/80 text-stone-100 placeholder:text-stone-400 focus-visible:ring-1 focus-visible:ring-brand flex-1 min-h-[46px]"
-                  />
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    onClick={() => handleRemoveBullet(idx)}
-                    className="h-7 w-7 text-muted-foreground hover:text-destructive shrink-0 mt-1"
-                    title="Remove point"
-                  >
-                    <Trash2 className="h-3 w-3" />
-                  </Button>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Statistics metrics */}
-          <div className="space-y-2 pt-2 border-t border-border/40">
-            <div className="flex items-center justify-between">
+          {/* Body Paragraph (if title-content, image-text, or has body) */}
+          {(slide.layout === 'title-content' || slide.layout === 'image-text' || content.body) && (
+            <div className="space-y-1.5 pt-2 border-t border-border/40">
               <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                <TrendingUp className="h-3.5 w-3.5 text-primary" />
-                Metric Stats
+                <AlignLeft className="h-3.5 w-3.5 text-brand" />
+                {t.editor.bodyField || 'Body Paragraph'}
               </label>
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={handleAddStat}
-                className="h-6 px-2 text-[11px] text-primary hover:bg-primary/10 gap-1"
-              >
-                <Plus className="h-3 w-3" />
-                Add Stat
-              </Button>
+              <Textarea
+                value={content.body || ''}
+                onChange={(e) => handleBodyChange(e.target.value)}
+                placeholder="Detailed narrative or body context for this slide..."
+                rows={3}
+                className="text-xs resize-none bg-stone-900 border-border/80 text-stone-100 placeholder:text-stone-400 focus-visible:ring-1 focus-visible:ring-brand"
+              />
             </div>
+          )}
 
-            <div className="space-y-2">
-              {(content.statistics || []).map((stat, idx) => (
-                <div
-                  key={stat.id || idx}
-                  className="p-2.5 rounded-lg bg-secondary/30 border border-border/50 space-y-1.5"
+          {/* =========================================================================
+              FEATURE CARDS CUSTOMIZATION (feature-grid)
+          ========================================================================= */}
+          {(slide.layout === 'feature-grid' || content.features) && (
+            <div className="space-y-3 pt-2 border-t border-border/40">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                  <Layers className="h-3.5 w-3.5 text-brand" />
+                  {t.editor.features || 'Feature Cards'} ({(content.features || []).length})
+                </label>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={handleAddFeature}
+                  className="h-6 px-2 text-[11px] text-brand hover:bg-brand/10 gap-1 cursor-pointer"
                 >
-                  <div className="flex items-center gap-2">
+                  <Plus className="h-3 w-3" />
+                  {t.editor.addFeature || 'Add Feature'}
+                </Button>
+              </div>
+
+              <div className="space-y-3">
+                {(content.features || []).map((feat, idx) => (
+                  <div
+                    key={feat.id || idx}
+                    className="p-3 rounded-xl bg-stone-900/90 border border-border/80 space-y-2.5 shadow-sm"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-1.5">
+                        <span className="size-5 rounded-full bg-brand/20 text-brand text-[10px] font-mono font-bold flex items-center justify-center">
+                          {idx + 1}
+                        </span>
+                        <span className="text-xs font-semibold text-foreground truncate max-w-[150px]">
+                          {feat.title || `Card ${idx + 1}`}
+                        </span>
+                      </div>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => handleRemoveFeature(idx)}
+                        className="h-6 w-6 text-muted-foreground hover:text-destructive cursor-pointer"
+                        title="Remove Card"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        {/* Icon selector */}
+                        <div className="w-24 shrink-0">
+                          <label className="text-[10px] text-muted-foreground block mb-0.5">
+                            {t.editor.featureIcon || 'Icon'}
+                          </label>
+                          <Select
+                            value={feat.icon || 'zap'}
+                            onValueChange={(val) => handleUpdateFeature(idx, 'icon', val)}
+                          >
+                            <SelectTrigger className="h-7 text-xs bg-stone-900 border-border/80">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {ICON_OPTIONS.map((ic) => (
+                                <SelectItem key={ic} value={ic} className="text-xs">
+                                  {ic}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        {/* Tag/Badge */}
+                        <div className="flex-1">
+                          <label className="text-[10px] text-muted-foreground block mb-0.5">
+                            {t.editor.featureBadge || 'Pillar / Tag'}
+                          </label>
+                          <Input
+                            value={feat.badge || ''}
+                            onChange={(e) => handleUpdateFeature(idx, 'badge', e.target.value)}
+                            placeholder="e.g. PILLAR 1"
+                            className="h-7 text-xs bg-stone-900 border-border/80 text-stone-100 placeholder:text-stone-400"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Card Title */}
+                      <div>
+                        <label className="text-[10px] text-muted-foreground block mb-0.5">
+                          {t.editor.featureTitle || 'Card Title'}
+                        </label>
+                        <Input
+                          value={feat.title}
+                          onChange={(e) => handleUpdateFeature(idx, 'title', e.target.value)}
+                          placeholder="Module or Feature Name"
+                          className="h-7.5 text-xs bg-stone-900 border-border/80 text-stone-100 placeholder:text-stone-400 font-semibold"
+                        />
+                      </div>
+
+                      {/* Card Description */}
+                      <div>
+                        <label className="text-[10px] text-muted-foreground block mb-0.5">
+                          {t.editor.featureDesc || 'Description'}
+                        </label>
+                        <Textarea
+                          value={feat.description}
+                          onChange={(e) => handleUpdateFeature(idx, 'description', e.target.value)}
+                          placeholder="Operational details and capabilities..."
+                          rows={2}
+                          className="text-xs resize-none bg-stone-900 border-border/80 text-stone-100 placeholder:text-stone-400 leading-relaxed"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* =========================================================================
+              TIMELINE CUSTOMIZATION (timeline)
+          ========================================================================= */}
+          {(slide.layout === 'timeline' || content.timeline) && (
+            <div className="space-y-3 pt-2 border-t border-border/40">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                  <Calendar className="h-3.5 w-3.5 text-brand" />
+                  {t.editor.timeline || 'Timeline Milestones'} ({(content.timeline || []).length})
+                </label>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={handleAddTimeline}
+                  className="h-6 px-2 text-[11px] text-brand hover:bg-brand/10 gap-1 cursor-pointer"
+                >
+                  <Plus className="h-3 w-3" />
+                  {t.editor.addTimeline || 'Add Milestone'}
+                </Button>
+              </div>
+
+              <div className="space-y-3">
+                {(content.timeline || []).map((milestone, idx) => (
+                  <div
+                    key={milestone.id || idx}
+                    className="p-3 rounded-xl bg-stone-900/90 border border-border/80 space-y-2 shadow-sm"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-1.5">
+                        <span className="size-5 rounded-full bg-brand/20 text-brand text-[10px] font-mono font-bold flex items-center justify-center">
+                          {idx + 1}
+                        </span>
+                        <Input
+                          value={milestone.phase || ''}
+                          onChange={(e) => handleUpdateTimeline(idx, 'phase', e.target.value)}
+                          placeholder="PHASE 01"
+                          className="h-6 text-[11px] font-mono uppercase bg-stone-900 border-border/80 w-24"
+                        />
+                      </div>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => handleRemoveTimeline(idx)}
+                        className="h-6 w-6 text-muted-foreground hover:text-destructive cursor-pointer"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </div>
+
                     <Input
-                      value={stat.value}
-                      onChange={(e) => handleUpdateStat(idx, 'value', e.target.value)}
-                      placeholder="e.g. 98.4%"
-                      className="text-xs font-mono font-bold h-7 bg-stone-900 border-border/80 text-stone-100 placeholder:text-stone-400 focus-visible:ring-1 focus-visible:ring-brand w-24"
+                      value={milestone.title}
+                      onChange={(e) => handleUpdateTimeline(idx, 'title', e.target.value)}
+                      placeholder="Milestone Title"
+                      className="h-7 text-xs font-semibold bg-stone-900 border-border/80"
                     />
-                    <Input
-                      value={stat.label}
-                      onChange={(e) => handleUpdateStat(idx, 'label', e.target.value)}
-                      placeholder="e.g. Accuracy Rate"
-                      className="text-xs h-7 bg-stone-900 border-border/80 text-stone-100 placeholder:text-stone-400 focus-visible:ring-1 focus-visible:ring-brand flex-1"
+
+                    <Textarea
+                      value={milestone.description}
+                      onChange={(e) => handleUpdateTimeline(idx, 'description', e.target.value)}
+                      placeholder="Scope, key deliverables, and deliverables..."
+                      rows={2}
+                      className="text-xs resize-none bg-stone-900 border-border/80"
+                    />
+
+                    <div className="flex items-center gap-2">
+                      <Input
+                        value={milestone.dateRange || ''}
+                        onChange={(e) => handleUpdateTimeline(idx, 'dateRange', e.target.value)}
+                        placeholder="e.g. Month 1 - 2"
+                        className="h-7 text-xs bg-stone-900 border-border/80 flex-1 font-mono"
+                      />
+                      <Select
+                        value={milestone.status || 'in-progress'}
+                        onValueChange={(val) => handleUpdateTimeline(idx, 'status', val)}
+                      >
+                        <SelectTrigger className="h-7 text-xs bg-stone-900 border-border/80 w-28">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="completed">Completed</SelectItem>
+                          <SelectItem value="in-progress">In Progress</SelectItem>
+                          <SelectItem value="upcoming">Upcoming</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* =========================================================================
+              COMPARISON CUSTOMIZATION (comparison)
+          ========================================================================= */}
+          {(slide.layout === 'comparison' || content.comparison) && (
+            <div className="space-y-4 pt-2 border-t border-border/40">
+              <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                <SplitSquareVertical className="h-3.5 w-3.5 text-brand" />
+                {t.editor.comparison || 'Comparison Columns'}
+              </label>
+
+              {/* Left Column */}
+              <div className="p-3 rounded-xl bg-stone-900/90 border border-border/80 space-y-2">
+                <span className="text-[11px] font-mono uppercase text-muted-foreground font-bold">
+                  Column 1 (Left / Legacy)
+                </span>
+                <Input
+                  value={content.comparison?.left?.title || ''}
+                  onChange={(e) => handleUpdateComparison('left', 'title', e.target.value)}
+                  placeholder="e.g. Traditional Workflow"
+                  className="h-7 text-xs font-semibold bg-stone-900"
+                />
+                <Input
+                  value={content.comparison?.left?.subtitle || ''}
+                  onChange={(e) => handleUpdateComparison('left', 'subtitle', e.target.value)}
+                  placeholder="e.g. Manual, fragmented, slow"
+                  className="h-7 text-xs bg-stone-900"
+                />
+                <div className="space-y-1.5 pt-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] text-muted-foreground font-semibold">Points:</span>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => handleAddComparisonPoint('left')}
+                      className="h-5 px-1.5 text-[10px] text-brand hover:bg-brand/10"
+                    >
+                      + Point
+                    </Button>
+                  </div>
+                  {(content.comparison?.left?.points || []).map((pt, pIdx) => (
+                    <div key={pIdx} className="flex items-center gap-1.5">
+                      <Input
+                        value={pt}
+                        onChange={(e) => handleUpdateComparisonPoint('left', pIdx, e.target.value)}
+                        className="h-6 text-xs bg-stone-900 flex-1"
+                      />
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => handleRemoveComparisonPoint('left', pIdx)}
+                        className="h-6 w-6 text-muted-foreground hover:text-destructive"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Right Column */}
+              <div className="p-3 rounded-xl bg-stone-900/90 border border-brand/50 space-y-2">
+                <span className="text-[11px] font-mono uppercase text-brand font-bold">
+                  Column 2 (Right / Recommended)
+                </span>
+                <Input
+                  value={content.comparison?.right?.title || ''}
+                  onChange={(e) => handleUpdateComparison('right', 'title', e.target.value)}
+                  placeholder="e.g. AI Slide Studio"
+                  className="h-7 text-xs font-semibold bg-stone-900"
+                />
+                <Input
+                  value={content.comparison?.right?.subtitle || ''}
+                  onChange={(e) => handleUpdateComparison('right', 'subtitle', e.target.value)}
+                  placeholder="e.g. Automated, unified, responsive"
+                  className="h-7 text-xs bg-stone-900"
+                />
+                <div className="space-y-1.5 pt-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] text-muted-foreground font-semibold">Points:</span>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => handleAddComparisonPoint('right')}
+                      className="h-5 px-1.5 text-[10px] text-brand hover:bg-brand/10"
+                    >
+                      + Point
+                    </Button>
+                  </div>
+                  {(content.comparison?.right?.points || []).map((pt, pIdx) => (
+                    <div key={pIdx} className="flex items-center gap-1.5">
+                      <Input
+                        value={pt}
+                        onChange={(e) => handleUpdateComparisonPoint('right', pIdx, e.target.value)}
+                        className="h-6 text-xs bg-stone-900 flex-1"
+                      />
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => handleRemoveComparisonPoint('right', pIdx)}
+                        className="h-6 w-6 text-muted-foreground hover:text-destructive"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* =========================================================================
+              TWO COLUMNS CUSTOMIZATION (two-columns)
+          ========================================================================= */}
+          {slide.layout === 'two-columns' && (
+            <div className="space-y-3 pt-2 border-t border-border/40">
+              <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                <Columns2 className="h-3.5 w-3.5 text-brand" />
+                {t.editor.twoColumns || 'Two Columns Content'}
+              </label>
+              <div>
+                <span className="text-[10px] text-muted-foreground block mb-0.5">Left Column:</span>
+                <Textarea
+                  value={content.leftColumn || ''}
+                  onChange={(e) => onUpdateContent({ leftColumn: e.target.value })}
+                  placeholder="Heading and paragraphs for left column..."
+                  rows={4}
+                  className="text-xs resize-none bg-stone-900"
+                />
+              </div>
+              <div>
+                <span className="text-[10px] text-muted-foreground block mb-0.5">Right Column:</span>
+                <Textarea
+                  value={content.rightColumn || ''}
+                  onChange={(e) => onUpdateContent({ rightColumn: e.target.value })}
+                  placeholder="Heading and paragraphs for right column..."
+                  rows={4}
+                  className="text-xs resize-none bg-stone-900"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* =========================================================================
+              KEY TAKEAWAYS (key-takeaways)
+          ========================================================================= */}
+          {(slide.layout === 'key-takeaways' || content.takeaways) && (
+            <div className="space-y-2 pt-2 border-t border-border/40">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                  <CheckCircle2 className="h-3.5 w-3.5 text-brand" />
+                  {t.editor.takeaways || 'Key Takeaways'}
+                </label>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={handleAddTakeaway}
+                  className="h-6 px-2 text-[11px] text-brand hover:bg-brand/10 gap-1 cursor-pointer"
+                >
+                  <Plus className="h-3 w-3" />
+                  Add
+                </Button>
+              </div>
+
+              <div className="space-y-2">
+                {(content.takeaways || []).map((tway, idx) => (
+                  <div key={idx} className="flex items-start gap-1.5">
+                    <span className="text-[10px] font-mono text-muted-foreground mt-2 w-4">
+                      {idx + 1}.
+                    </span>
+                    <Textarea
+                      value={tway}
+                      onChange={(e) => handleTakeawayChange(idx, e.target.value)}
+                      rows={2}
+                      className="text-xs resize-none bg-stone-900 border-border/80 text-stone-100 placeholder:text-stone-400 focus-visible:ring-1 focus-visible:ring-brand flex-1 min-h-[46px]"
                     />
                     <Button
                       size="icon"
                       variant="ghost"
-                      onClick={() => handleRemoveStat(idx)}
-                      className="h-7 w-7 text-muted-foreground hover:text-destructive shrink-0"
+                      onClick={() => handleRemoveTakeaway(idx)}
+                      className="h-7 w-7 text-muted-foreground hover:text-destructive shrink-0 mt-1 cursor-pointer"
                     >
                       <Trash2 className="h-3 w-3" />
                     </Button>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
-          {/* Quote & Author (if quote layout) */}
+          {/* =========================================================================
+              BULLET POINTS (title-content, image-text, etc.)
+          ========================================================================= */}
+          {(slide.layout === 'title-content' || slide.layout === 'image-text' || (content.bulletPoints && content.bulletPoints.length > 0)) && (
+            <div className="space-y-2 pt-2 border-t border-border/40">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-semibold text-foreground">{t.editor.bulletPoints}</label>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={handleAddBullet}
+                  className="h-6 px-2 text-[11px] text-brand hover:bg-brand/10 gap-1 cursor-pointer"
+                >
+                  <Plus className="h-3 w-3" />
+                  Add Point
+                </Button>
+              </div>
+
+              <div className="space-y-2">
+                {(content.bulletPoints || []).map((bullet, idx) => (
+                  <div key={idx} className="flex items-start gap-1.5">
+                    <span className="text-[10px] font-mono text-muted-foreground mt-2 w-4">
+                      {idx + 1}.
+                    </span>
+                    <Textarea
+                      value={bullet}
+                      onChange={(e) => handleBulletChange(idx, e.target.value)}
+                      rows={2}
+                      className="text-xs resize-none bg-stone-900 border-border/80 text-stone-100 placeholder:text-stone-400 focus-visible:ring-1 focus-visible:ring-brand flex-1 min-h-[46px]"
+                    />
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      onClick={() => handleRemoveBullet(idx)}
+                      className="h-7 w-7 text-muted-foreground hover:text-destructive shrink-0 mt-1 cursor-pointer"
+                      title="Remove point"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* =========================================================================
+              METRIC STATS (statistics, metric-highlight)
+          ========================================================================= */}
+          {(slide.layout === 'statistics' || slide.layout === 'metric-highlight' || (content.statistics && content.statistics.length > 0)) && (
+            <div className="space-y-2 pt-2 border-t border-border/40">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                  <TrendingUp className="h-3.5 w-3.5 text-brand" />
+                  Metric Stats
+                </label>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={handleAddStat}
+                  className="h-6 px-2 text-[11px] text-brand hover:bg-brand/10 gap-1 cursor-pointer"
+                >
+                  <Plus className="h-3 w-3" />
+                  Add Stat
+                </Button>
+              </div>
+
+              <div className="space-y-2">
+                {(content.statistics || []).map((stat, idx) => (
+                  <div
+                    key={stat.id || idx}
+                    className="p-2.5 rounded-lg bg-stone-900/90 border border-border/80 space-y-1.5"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Input
+                        value={stat.value}
+                        onChange={(e) => handleUpdateStat(idx, 'value', e.target.value)}
+                        placeholder="e.g. 98.4%"
+                        className="text-xs font-mono font-bold h-7 bg-stone-900 border-border/80 text-stone-100 placeholder:text-stone-400 focus-visible:ring-1 focus-visible:ring-brand w-24"
+                      />
+                      <Input
+                        value={stat.label}
+                        onChange={(e) => handleUpdateStat(idx, 'label', e.target.value)}
+                        placeholder="e.g. Accuracy Rate"
+                        className="text-xs h-7 bg-stone-900 border-border/80 text-stone-100 placeholder:text-stone-400 focus-visible:ring-1 focus-visible:ring-brand flex-1"
+                      />
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => handleRemoveStat(idx)}
+                        className="h-7 w-7 text-muted-foreground hover:text-destructive shrink-0 cursor-pointer"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* =========================================================================
+              QUOTE & AUTHOR (quote layout)
+          ========================================================================= */}
           {slide.layout === 'quote' && (
             <div className="space-y-2 pt-2 border-t border-border/40">
-              <label className="text-xs font-semibold text-foreground">Quote Text &amp; Author</label>
+              <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                <Quote className="h-3.5 w-3.5 text-brand" />
+                Quote Text &amp; Author
+              </label>
               <Textarea
                 value={content.quote || ''}
                 onChange={(e) => onUpdateContent({ quote: e.target.value })}
@@ -262,61 +848,95 @@ export function PropertyPanel({
               <Input
                 value={content.author || ''}
                 onChange={(e) => onUpdateContent({ author: e.target.value })}
-                placeholder="Quote Author (e.g. Satya Nadella, CEO)"
+                placeholder="Quote Author (e.g. Satya Nadella)"
                 className="text-xs bg-stone-900 border-border/80 text-stone-100 placeholder:text-stone-400 focus-visible:ring-1 focus-visible:ring-brand"
+              />
+              <Input
+                value={content.authorRole || ''}
+                onChange={(e) => onUpdateContent({ authorRole: e.target.value })}
+                placeholder="Author Role (e.g. Chief Executive Officer)"
+                className="text-xs bg-stone-900 border-border/80 text-stone-100 placeholder:text-stone-400 focus-visible:ring-1 focus-visible:ring-brand"
+              />
+            </div>
+          )}
+
+          {/* =========================================================================
+              CALL TO ACTION (closing layout)
+          ========================================================================= */}
+          {slide.layout === 'closing' && (
+            <div className="space-y-2 pt-2 border-t border-border/40">
+              <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                <ExternalLink className="h-3.5 w-3.5 text-brand" />
+                {t.editor.callToAction || 'Call to Action Button'}
+              </label>
+              <Input
+                value={content.ctaText || ''}
+                onChange={(e) => onUpdateContent({ ctaText: e.target.value })}
+                placeholder="e.g. Start Free Trial or Contact Sales"
+                className="text-xs bg-stone-900 border-border/80 text-stone-100 font-semibold"
+              />
+              <Input
+                value={content.ctaUrl || ''}
+                onChange={(e) => onUpdateContent({ ctaUrl: e.target.value })}
+                placeholder="https://... or #"
+                className="text-xs bg-stone-900 border-border/80 text-stone-100 font-mono"
               />
             </div>
           )}
         </TabsContent>
 
-        {/* Tab 2: Layout & Theme */}
+        {/* =========================================================================
+            Tab 2: Layout & Theme
+        ========================================================================= */}
         <TabsContent value="layout" className="flex-1 overflow-y-auto p-4 space-y-4 m-0">
           {/* Layout Selector */}
           <div className="space-y-1.5">
             <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-              <Layout className="h-3.5 w-3.5 text-primary" />
+              <Layout className="h-3.5 w-3.5 text-brand" />
               Slide Layout
             </label>
             <Select
               value={slide.layout}
               onValueChange={(val) => onSetLayout(val as SlideLayout)}
             >
-              <SelectTrigger className="text-xs">
+              <SelectTrigger className="text-xs bg-stone-900 border-border/80">
                 <SelectValue placeholder="Select layout" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="cover">Cover Slide</SelectItem>
-                <SelectItem value="title-content">Title &amp; Content</SelectItem>
-                <SelectItem value="two-columns">Two Columns</SelectItem>
-                <SelectItem value="image-text">Image &amp; Text</SelectItem>
-                <SelectItem value="quote">Executive Quote</SelectItem>
-                <SelectItem value="statistics">Statistics &amp; Metrics</SelectItem>
-                <SelectItem value="timeline">Timeline Milestones</SelectItem>
-                <SelectItem value="comparison">Comparison Grid</SelectItem>
-                <SelectItem value="key-takeaways">Key Takeaways</SelectItem>
-                <SelectItem value="closing">Closing Slide</SelectItem>
+                <SelectItem value="cover">Cover / Title Slide</SelectItem>
+                <SelectItem value="title-content">Title &amp; Content (Executive)</SelectItem>
+                <SelectItem value="feature-grid">Feature Grid (3-4 Pillar Cards)</SelectItem>
+                <SelectItem value="statistics">Key Statistics &amp; Metrics</SelectItem>
+                <SelectItem value="timeline">Milestone Timeline Roadmap</SelectItem>
+                <SelectItem value="comparison">Side-by-Side Comparison</SelectItem>
+                <SelectItem value="key-takeaways">Key Takeaways List</SelectItem>
+                <SelectItem value="metric-highlight">Metric Highlight Spotlight</SelectItem>
+                <SelectItem value="two-columns">Two Balanced Columns</SelectItem>
+                <SelectItem value="image-text">Visual Media &amp; Narrative</SelectItem>
+                <SelectItem value="quote">Inspirational Quote</SelectItem>
+                <SelectItem value="closing">Closing / Thank You / CTA</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
-          {/* Global Presentation Theme */}
+          {/* Theme Selector */}
           <div className="space-y-1.5 pt-2 border-t border-border/40">
             <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-              <Palette className="h-3.5 w-3.5 text-primary" />
+              <Palette className="h-3.5 w-3.5 text-brand" />
               Presentation Theme
             </label>
             <Select
               value={theme}
               onValueChange={(val) => onSetTheme(val as ThemeName)}
             >
-              <SelectTrigger className="text-xs">
+              <SelectTrigger className="text-xs bg-stone-900 border-border/80">
                 <SelectValue placeholder="Select theme" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="modern-dark">Modern Dark</SelectItem>
-                <SelectItem value="minimal-light">Minimal Light</SelectItem>
-                <SelectItem value="corporate-blue">Corporate Blue</SelectItem>
-                <SelectItem value="editorial">Editorial Warm</SelectItem>
+                <SelectItem value="modern-dark">Modern Dark (Keynote Classic)</SelectItem>
+                <SelectItem value="minimal-light">Minimal Light (Clean White)</SelectItem>
+                <SelectItem value="corporate-blue">Corporate Blue (Enterprise)</SelectItem>
+                <SelectItem value="editorial">Editorial (Warm Serif)</SelectItem>
                 <SelectItem value="technology-gradient">Technology Gradient</SelectItem>
                 <SelectItem value="elegant-monochrome">Elegant Monochrome</SelectItem>
               </SelectContent>
@@ -343,12 +963,14 @@ export function PropertyPanel({
           )}
         </TabsContent>
 
-        {/* Tab 3: Motion & Speaker Notes */}
+        {/* =========================================================================
+            Tab 3: Motion & Speaker Notes
+        ========================================================================= */}
         <TabsContent value="animation" className="flex-1 overflow-y-auto p-4 space-y-4 m-0">
           {/* GSAP Animation Preset */}
           <div className="space-y-1.5">
             <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-              <Sparkles className="h-3.5 w-3.5 text-primary" />
+              <Sparkles className="h-3.5 w-3.5 text-brand" />
               Element Animation Preset
             </label>
             <Select
@@ -357,7 +979,7 @@ export function PropertyPanel({
                 onSetAnimation(val as AnimationPreset, slide.animation?.duration || 0.8)
               }
             >
-              <SelectTrigger className="text-xs">
+              <SelectTrigger className="text-xs bg-stone-900 border-border/80">
                 <SelectValue placeholder="Select animation" />
               </SelectTrigger>
               <SelectContent>
@@ -398,14 +1020,14 @@ export function PropertyPanel({
           {/* Slide Transition Type */}
           <div className="space-y-1.5 pt-2 border-t border-border/40">
             <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-              <MoveRight className="h-3.5 w-3.5 text-primary" />
+              <MoveRight className="h-3.5 w-3.5 text-brand" />
               Slide Transition
             </label>
             <Select
               value={slide.transition?.type || 'fade'}
               onValueChange={(val) => onSetTransition(val as TransitionType)}
             >
-              <SelectTrigger className="text-xs">
+              <SelectTrigger className="text-xs bg-stone-900 border-border/80">
                 <SelectValue placeholder="Select transition" />
               </SelectTrigger>
               <SelectContent>
@@ -420,7 +1042,7 @@ export function PropertyPanel({
           {/* Speaker Notes */}
           <div className="space-y-1.5 pt-2 border-t border-border/40">
             <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-              <FileText className="h-3.5 w-3.5 text-primary" />
+              <FileText className="h-3.5 w-3.5 text-brand" />
               Speaker Notes
             </label>
             <Textarea

@@ -85,6 +85,7 @@ export default function PresentationEditorPage({
 function EditorMain({ initialDoc }: { initialDoc: PresentationDocument }) {
   const router = useRouter();
   const [animationKey, setAnimationKey] = useState(0);
+  const [showPropertyPanel, setShowPropertyPanel] = useState(true);
 
   const editor = useEditorStore(initialDoc);
 
@@ -110,6 +111,8 @@ function EditorMain({ initialDoc }: { initialDoc: PresentationDocument }) {
         onTitleChange={editor.setTitle}
         onReplayAnimation={handleReplayAnimation}
         onImportDocument={(imported) => editor.setDocument(imported)}
+        showPropertyPanel={showPropertyPanel}
+        onTogglePropertyPanel={() => setShowPropertyPanel((prev) => !prev)}
       />
 
       {/* Main 3-Panel Body */}
@@ -149,7 +152,7 @@ function EditorMain({ initialDoc }: { initialDoc: PresentationDocument }) {
         )}
 
         {/* Right Panel: Properties */}
-        {editor.activeSlide && (
+        {showPropertyPanel && editor.activeSlide && (
           <PropertyPanel
             slide={editor.activeSlide}
             theme={editor.document.theme}
