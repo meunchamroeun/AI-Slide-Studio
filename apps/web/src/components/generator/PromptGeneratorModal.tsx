@@ -353,7 +353,7 @@ export function PromptGeneratorModal({
                     : 'e.g. Create a 10-slide professional presentation about Artificial Intelligence, its development, applications, challenges, and future.'
                 }
                 rows={4}
-                className="resize-none bg-background/60 text-sm leading-relaxed border-border/70 focus:border-brand/60 focus:ring-1 focus:ring-brand/30 rounded-xl"
+                className="resize-none bg-stone-900 text-stone-100 placeholder:text-stone-400 text-sm leading-relaxed border-border/70 focus:border-brand/60 focus:ring-1 focus:ring-brand/30 rounded-xl"
               />
 
               <div className="flex flex-wrap gap-1.5 pt-1">
